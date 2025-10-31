@@ -18,6 +18,7 @@
     "@repo/graphql": "workspace:*",
     "@repo/tailwind-config": "workspace:*",
     "@repo/ui": "workspace:*",
+    "@sentry/nextjs": "^10.22.0",
     "@stripe/stripe-js": "^8.2.0",
     "graphql": "^16.8.1",
     "lucide-react": "^0.378.0",

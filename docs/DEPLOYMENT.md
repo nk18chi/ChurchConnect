@@ -5,6 +5,7 @@ This guide covers deploying ChurchConnect Japan to production.
 ## Table of Contents
 
 - [Overview](#overview)
+- [Deployment Scripts](#deployment-scripts)
 - [Prerequisites](#prerequisites)
 - [Database Setup](#database-setup)
 - [Environment Variables](#environment-variables)
@@ -23,6 +24,66 @@ The ChurchConnect platform consists of 4 deployable apps:
 3. **Admin Dashboard** (`apps/admin`) - Platform admin interface
 4. **GraphQL API** (`apps/api`) - API server
 
+## Deployment Scripts
+
+The repository includes several deployment scripts to help with the deployment process:
+
+### Pre-Deployment Script
+
+Run before deploying to verify everything is ready:
+
+```bash
+./scripts/pre-deploy.sh
+```
+
+**What it checks:**
+- TypeScript type checking across all apps
+- Environment variables are set
+- Database connection works
+- Migration status
+- Production build succeeds
+
+### Deployment Script
+
+Run to build and prepare all apps for deployment:
+
+```bash
+./scripts/deploy.sh
+```
+
+**What it does:**
+- Installs dependencies with frozen lockfile
+- Generates Prisma client
+- Runs database migrations
+- Builds all apps
+- Verifies deployment readiness
+
+### Post-Deployment Verification Script
+
+Run after deployment to verify everything is working:
+
+```bash
+./scripts/verify-deployment.sh
+```
+
+**What it checks:**
+- All apps are accessible
+- Database connection works
+- GraphQL API responds correctly
+- Critical API endpoints work
+
+### Additional Scripts
+
+**Health Check** (for monitoring):
+```bash
+./scripts/health-check.sh
+```
+
+**Deployment Check** (alternative pre-deployment check):
+```bash
+./scripts/deploy-check.sh
+```
+
 ## Prerequisites
 
 Before deploying, ensure you have:
@@ -32,6 +93,40 @@ Before deploying, ensure you have:
 - [ ] Domain names (optional but recommended)
 - [ ] Git repository (GitHub, GitLab, etc.)
 - [ ] Hosting platform account (Render, Vercel, etc.)
+
+## Pre-Deployment Checklist
+
+Run the pre-deployment check script before deploying:
+
+```bash
+./scripts/deploy-check.sh
+```
+
+This script verifies:
+- [ ] Node.js version >=20
+- [ ] pnpm installed
+- [ ] All required environment variables set
+- [ ] Database connection works
+- [ ] All migrations applied
+- [ ] TypeScript type check passes
+- [ ] Production build succeeds
+
+**Important:** All checks must pass before proceeding with deployment.
+
+### Manual Pre-Deployment Tasks
+
+Additional tasks to complete before deploying:
+
+- [ ] Review recent commits for any issues
+- [ ] Create database backup
+- [ ] Update CHANGELOG.md with new version
+- [ ] Test critical paths on staging (see docs/CRITICAL_PATHS.md)
+- [ ] Verify all third-party services are configured:
+  - [ ] Cloudinary credentials
+  - [ ] Resend API key and domain
+  - [ ] reCAPTCHA site keys
+  - [ ] Stripe production keys
+- [ ] Review security checklist (see Security Checklist section below)
 
 ## Database Setup
 
@@ -148,6 +243,46 @@ Best for Next.js apps (web, portal, admin). You'll need separate hosting for the
 Similar process to Render.
 
 ## Render Deployment
+
+### Option 1: Using render.yaml (Recommended)
+
+The repository includes a `render.yaml` file that defines all services and their configurations.
+
+**Step 1: Connect Repository to Render**
+
+1. Go to https://render.com/
+2. Click "New" → "Blueprint"
+3. Connect your GitHub repository
+4. Render will automatically detect `render.yaml`
+
+**Step 2: Configure Environment Variables**
+
+Before deploying, you'll need to set environment variables in the Render dashboard. The `render.yaml` file references these variables but doesn't include their values for security.
+
+Required environment variables (set for each service):
+- `NEXTAUTH_URL` - Your app URL (e.g., https://churchconnect.jp)
+- `NEXTAUTH_SECRET` - Generate with `openssl rand -base64 32`
+- `NEXT_PUBLIC_WEB_URL`
+- `NEXT_PUBLIC_API_URL`
+- `NEXT_PUBLIC_PORTAL_URL`
+- `NEXT_PUBLIC_ADMIN_URL`
+- `NEXT_PUBLIC_GRAPHQL_URL`
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+- `RESEND_API_KEY`, `EMAIL_FROM`, `ADMIN_EMAIL`
+- `NEXT_PUBLIC_RECAPTCHA_SITE_KEY`, `RECAPTCHA_SECRET_KEY`
+- `STRIPE_SECRET_KEY`, `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, `STRIPE_WEBHOOK_SECRET`
+- `SENTRY_DSN` (optional)
+
+**Step 3: Deploy**
+
+1. Click "Apply" to create all services
+2. Render will create:
+   - PostgreSQL database
+   - 4 web services (web, church-portal, admin, api)
+3. Wait for deployment to complete
+4. Run database migrations (see Step 6 in manual deployment)
+
+### Option 2: Manual Deployment
 
 ### Step 1: Push Code to Git
 
@@ -316,48 +451,104 @@ For the API, use Render or Railway (Vercel doesn't support long-running processe
 
 ## Post-Deployment
 
-### Step 1: Verify Deployments
+### Step 1: Run Health Check
 
-Test each app:
+After deployment, run the health check script:
+
+```bash
+./scripts/health-check.sh
+```
+
+This script verifies that all apps are accessible and returning expected status codes.
+
+### Step 2: Verify Deployments
+
+Test each app manually:
 
 - [ ] Web app loads: https://churchconnect.jp
 - [ ] Church portal loads: https://portal.churchconnect.jp
 - [ ] Admin dashboard loads: https://admin.churchconnect.jp
 - [ ] GraphQL API works: https://api.churchconnect.jp/graphql
 
-### Step 2: Test Critical Flows
+### Step 3: Test Critical Flows
 
-- [ ] Browse church directory
+Run through all critical paths (see docs/CRITICAL_PATHS.md for details):
+
+**Critical Path 1: User Can Discover Churches**
+- [ ] Search for churches
+- [ ] Filter by prefecture
 - [ ] View church profile
-- [ ] User registration/login
-- [ ] Church admin login
-- [ ] Platform admin login
-- [ ] Make test donation (use Stripe test card: 4242 4242 4242 4242)
-- [ ] Submit review
-- [ ] Upload church photo
-- [ ] Edit church profile
+- [ ] Navigate through all tabs
 
-### Step 3: Test Stripe Integration
+**Critical Path 2: User Can Submit Review**
+- [ ] Create user account / login
+- [ ] Submit a review
+- [ ] Receive confirmation email
 
-1. **Test Donation Flow**
-   - Go to `/donate`
-   - Select amount
-   - Complete checkout with test card
-   - Verify webhook received
-   - Check donation recorded in database
+**Critical Path 3: Church Admin Can Manage Profile**
+- [ ] Login as church admin
+- [ ] Update church profile
+- [ ] Upload photos
+- [ ] Add staff member
+- [ ] Verify changes appear on public profile
 
-2. **Test Recurring Donation**
-   - Create monthly donation
-   - Verify subscription in Stripe Dashboard
-   - Verify subscription in database
+**Critical Path 4: Platform Admin Can Moderate**
+- [ ] Login as platform admin
+- [ ] View pending reviews
+- [ ] Approve/reject review
+- [ ] Verify emails sent
 
-### Step 4: Monitor for Errors
+**Critical Path 5: Platform Donations Work**
+- [ ] Visit /donate page
+- [ ] Complete Stripe Checkout (use test card in test mode: 4242 4242 4242 4242)
+- [ ] Verify donation recorded
+- [ ] Receive receipt email
 
-Check logs in hosting platform:
+**Critical Path 6: Contact Form Works**
+- [ ] Fill out contact form
+- [ ] Submit with reCAPTCHA validation
+- [ ] Verify email received
+
+### Step 4: Verify Third-Party Integrations
+
+**Cloudinary (Image Upload):**
+- [ ] Upload image in church portal
+- [ ] Verify image appears in gallery
+- [ ] Check image is properly optimized
+
+**Resend (Email Delivery):**
+- [ ] Test contact form submission
+- [ ] Test review notification
+- [ ] Test donation receipt
+- [ ] Check Resend dashboard for delivery status
+
+**Stripe (Payments):**
+- [ ] Test donation checkout
+- [ ] Verify webhook receives events
+- [ ] Check donation in Stripe dashboard
+- [ ] Verify donation recorded in database
+
+**reCAPTCHA (Spam Protection):**
+- [ ] Submit contact form
+- [ ] Verify reCAPTCHA validation works
+- [ ] Check reCAPTCHA dashboard for requests
+
+### Step 5: Monitor for Errors
+
+Check logs in hosting platform for the first 24 hours:
 - Render: Service → Logs
 - Vercel: Project → Deployments → Logs
 
-### Step 5: Set Up Production Admin User
+Watch for:
+- [ ] 500 errors
+- [ ] Failed API requests
+- [ ] Database connection errors
+- [ ] Webhook failures
+- [ ] Email delivery failures
+
+**Note:** Consider setting up Sentry for error tracking (see docs/MONITORING.md)
+
+### Step 6: Set Up Production Admin User
 
 ```bash
 # Connect to production database

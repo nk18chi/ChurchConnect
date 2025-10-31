@@ -1,0 +1,183 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: churchconnect-db
+    env: docker
+    plan: starter
+    region: oregon
+    databaseName: churchconnect
+    databaseUser: churchconnect
+    ipAllowList: []
+
+  # GraphQL API Server
+  - type: web
+    name: churchconnect-api
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: cd ../.. && pnpm install --frozen-lockfile && pnpm --filter api build
+    startCommand: cd apps/api && pnpm start
+    rootDir: apps/api
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: churchconnect-db
+          property: connectionString
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+    healthCheckPath: /graphql
+
+  # Public Web App
+  - type: web
+    name: churchconnect-web
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: cd ../.. && pnpm install --frozen-lockfile && pnpm --filter web build
+    startCommand: cd apps/web && pnpm start
+    rootDir: apps/web
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: churchconnect-db
+          property: connectionString
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_WEB_URL
+        sync: false
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_PORTAL_URL
+        sync: false
+      - key: NEXT_PUBLIC_ADMIN_URL
+        sync: false
+      - key: NEXT_PUBLIC_GRAPHQL_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+        sync: false
+      - key: RECAPTCHA_SECRET_KEY
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: production
+    healthCheckPath: /
+
+  # Church Portal App
+  - type: web
+    name: churchconnect-portal
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: cd ../.. && pnpm install --frozen-lockfile && pnpm --filter church-portal build
+    startCommand: cd apps/church-portal && pnpm start
+    rootDir: apps/church-portal
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: churchconnect-db
+          property: connectionString
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_WEB_URL
+        sync: false
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_PORTAL_URL
+        sync: false
+      - key: NEXT_PUBLIC_ADMIN_URL
+        sync: false
+      - key: NEXT_PUBLIC_GRAPHQL_URL
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: production
+    healthCheckPath: /login
+
+  # Admin Dashboard App
+  - type: web
+    name: churchconnect-admin
+    env: node
+    region: oregon
+    plan: starter
+    buildCommand: cd ../.. && pnpm install --frozen-lockfile && pnpm --filter admin build
+    startCommand: cd apps/admin && pnpm start
+    rootDir: apps/admin
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: churchconnect-db
+          property: connectionString
+      - key: NEXTAUTH_URL
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXT_PUBLIC_WEB_URL
+        sync: false
+      - key: NEXT_PUBLIC_API_URL
+        sync: false
+      - key: NEXT_PUBLIC_PORTAL_URL
+        sync: false
+      - key: NEXT_PUBLIC_ADMIN_URL
+        sync: false
+      - key: NEXT_PUBLIC_GRAPHQL_URL
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: SENTRY_DSN
+        sync: false
+      - key: SENTRY_ENVIRONMENT
+        value: production
+    healthCheckPath: /login
+
+databases:
+  - name: churchconnect-db
+    databaseName: churchconnect
+    user: churchconnect
+    plan: starter
+    region: oregon

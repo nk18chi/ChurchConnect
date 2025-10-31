@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/sidebar";
 import { ApolloWrapper } from "@/components/apollo-wrapper";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -22,14 +23,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ApolloWrapper>
-          <div className="flex h-screen overflow-hidden">
-            <Sidebar />
-            <main className="flex-1 overflow-y-auto bg-gray-50">
-              {children}
-            </main>
-          </div>
-        </ApolloWrapper>
+        <ErrorBoundary>
+          <ApolloWrapper>
+            <div className="flex h-screen overflow-hidden">
+              <Sidebar />
+              <main className="flex-1 overflow-y-auto bg-gray-50">
+                {children}
+              </main>
+            </div>
+          </ApolloWrapper>
+        </ErrorBoundary>
       </body>
     </html>
   );

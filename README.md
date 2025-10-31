@@ -1,29 +1,67 @@
 # ChurchConnect Japan
 
-A cross-denominational church directory platform for Japan, helping people discover and connect with churches across the country.
+> A cross-denominational church directory platform connecting Christians with churches across Japan.
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black)](https://nextjs.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5.x-2D3748)](https://www.prisma.io/)
 
 ## Overview
 
-ChurchConnect Japan is a comprehensive platform that provides:
+ChurchConnect Japan helps Christians discover churches, read authentic community reviews, and connect with church communities across Japan. Each church gets a beautiful, feature-rich profile page with comprehensive content management capabilities.
 
-- **Public Directory**: Browse churches by location, denomination, and language
-- **Church Profiles**: Detailed information about each church including services, staff, events, and sermons
-- **Church Portal**: Self-service content management for church administrators
-- **Admin Dashboard**: Platform management and verification tools
-- **Platform Donations**: Support the platform through Stripe-powered donations
-- **Reviews**: Community feedback and church responses
+**Live Site:** [churchconnect.jp](https://churchconnect.jp) *(Coming Soon)*
+
+## Features
+
+### For Church Seekers
+- **Search & Filter** - Find churches by location, denomination, language, worship style
+- **Rich Profiles** - View detailed church information, sermons, events, staff
+- **Community Reviews** - Read authentic reviews from community members
+- **Interactive Map** - Discover churches near you
+- **Direct Contact** - Connect with churches through contact forms
+
+### For Church Leaders
+- **Profile Management** - Complete control over your church's online presence
+- **Photo Gallery** - Showcase your community with unlimited photos
+- **Staff Profiles** - Introduce your leadership team
+- **Events Calendar** - Promote upcoming events
+- **Sermon Archive** - Share sermons with links to YouTube/podcasts
+- **Analytics Dashboard** - Track profile views and engagement
+- **Review Management** - Respond to community reviews
+
+### For Platform Supporters
+- **Platform Donations** - Support this free resource with one-time or monthly giving via Stripe
+- **Verified Badge** - Verified churches get priority in search results
 
 ## Tech Stack
 
-- **Monorepo**: Turborepo + pnpm workspaces
-- **Framework**: Next.js 14 (App Router)
-- **Language**: TypeScript
-- **Database**: PostgreSQL + Prisma ORM
-- **API**: GraphQL with Pothos (code-first schema)
-- **Authentication**: NextAuth.js v5
-- **Payments**: Stripe Checkout
-- **UI**: Tailwind CSS + shadcn/ui
-- **Deployment**: Render (or Vercel)
+**Frontend:**
+- [Next.js 14](https://nextjs.org/) (App Router) - React framework
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Tailwind CSS](https://tailwindcss.com/) - Styling
+- [shadcn/ui](https://ui.shadcn.com/) - UI components
+
+**Backend:**
+- [PostgreSQL](https://www.postgresql.org/) - Database with full-text search
+- [Prisma](https://www.prisma.io/) - ORM and type-safe database client
+- [GraphQL](https://graphql.org/) with [Pothos](https://pothos-graphql.dev/) - Type-safe API
+- [Apollo Server](https://www.apollographql.com/) - GraphQL server
+
+**Authentication & Payments:**
+- [NextAuth.js v5](https://next-auth.js.org/) - Authentication with role-based access control
+- [Stripe](https://stripe.com/) - Payment processing for donations
+
+**Infrastructure:**
+- [Render](https://render.com/) - Hosting and PostgreSQL database
+- [Cloudinary](https://cloudinary.com/) - Image storage & CDN
+- [Resend](https://resend.com/) - Transactional email delivery
+- [Sentry](https://sentry.io/) - Error tracking and monitoring
+
+**Monorepo:**
+- [Turborepo](https://turbo.build/) - Build system
+- [pnpm](https://pnpm.io/) - Package manager
 
 ## Project Structure
 
@@ -31,289 +69,284 @@ ChurchConnect Japan is a comprehensive platform that provides:
 churchconnect/
 ├── apps/
 │   ├── web/              # Public website (Next.js)
-│   ├── church-portal/    # Church admin portal (Next.js)
+│   ├── church-portal/    # Church admin dashboard (Next.js)
 │   ├── admin/            # Platform admin dashboard (Next.js)
-│   └── api/              # GraphQL API (Express + Apollo Server)
+│   └── api/              # GraphQL API (Apollo Server)
 ├── packages/
-│   ├── database/         # Prisma schema and client
+│   ├── database/         # Prisma schema & migrations
 │   ├── graphql/          # Pothos GraphQL schema
 │   ├── auth/             # NextAuth.js configuration
-│   ├── ui/               # Shared UI components (shadcn/ui)
+│   ├── ui/               # Shared UI components
+│   ├── cloudinary/       # Image upload utilities
+│   ├── email/            # Email templates & sending
+│   ├── monitoring/       # Sentry error tracking
 │   ├── typescript-config/# Shared TypeScript configs
 │   ├── eslint-config/    # Shared ESLint configs
 │   └── tailwind-config/  # Shared Tailwind configs
-└── docs/
-    └── plans/            # Implementation plans
+├── docs/                 # Documentation
+│   ├── guides/           # User guides
+│   └── plans/            # Implementation plans
+└── scripts/              # Utility scripts
 ```
 
 ## Quick Start
 
 ### Prerequisites
 
-- Node.js 20+ (check with `node --version`)
-- pnpm 8.15.0+ (install with `npm install -g pnpm`)
-- PostgreSQL 14+ (local or remote)
-- Stripe account (for donations feature)
+- Node.js 20+
+- pnpm 8.15.0+
+- PostgreSQL 14+
 
-### Installation
+### Installation (< 30 minutes)
 
 1. **Clone the repository**
-
-```bash
-git clone <repository-url>
-cd ChurchConnect
-```
+   ```bash
+   git clone https://github.com/yourusername/churchconnect.git
+   cd churchconnect
+   ```
 
 2. **Install dependencies**
-
-```bash
-pnpm install
-```
+   ```bash
+   pnpm install
+   ```
 
 3. **Set up environment variables**
+   ```bash
+   cp .env.example .env
+   ```
 
-Copy the example env file:
+   Edit `.env` with your configuration. See [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md) for details.
 
-```bash
-cp .env.example .env
-```
+   **Quick setup for local development:**
+   ```env
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/churchconnect"
+   NEXTAUTH_SECRET="$(openssl rand -base64 32)"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXT_PUBLIC_WEB_URL="http://localhost:3000"
+   NEXT_PUBLIC_API_URL="http://localhost:3001"
+   NEXT_PUBLIC_PORTAL_URL="http://localhost:3002"
+   NEXT_PUBLIC_ADMIN_URL="http://localhost:3003"
+   ```
 
-Edit `.env` with your database credentials and other configuration:
-
-```env
-DATABASE_URL="postgresql://user:password@localhost:5432/churchconnect"
-NEXTAUTH_SECRET="your-secret-key"
-STRIPE_SECRET_KEY="sk_test_..."
-STRIPE_PUBLISHABLE_KEY="pk_test_..."
-STRIPE_WEBHOOK_SECRET="whsec_..."
-```
-
-Also copy env files for each app:
-
-```bash
-cp apps/web/.env.example apps/web/.env.local
-cp apps/api/.env.example apps/api/.env
-cp apps/church-portal/.env.example apps/church-portal/.env.local
-cp apps/admin/.env.example apps/admin/.env.local
-```
-
-4. **Set up the database**
-
-Generate Prisma client:
-
-```bash
-cd packages/database
-pnpm db:generate
-```
-
-Push schema to database:
-
-```bash
-pnpm db:push
-```
-
-Seed initial data (prefectures, cities, languages, denominations):
-
-```bash
-pnpm db:seed
-```
+4. **Set up database**
+   ```bash
+   cd packages/database
+   npx prisma migrate deploy
+   npx prisma db seed
+   cd ../..
+   ```
 
 5. **Start development servers**
+   ```bash
+   pnpm dev
+   ```
 
-From the root directory:
-
-```bash
-pnpm dev
-```
-
-This will start all apps concurrently:
-
-- Web app: http://localhost:3000
+**Apps will be available at:**
+- Web: http://localhost:3000
 - Church Portal: http://localhost:3002
-- Admin Dashboard: http://localhost:3003
+- Admin: http://localhost:3003
 - GraphQL API: http://localhost:3001/graphql
 
-## Available Scripts
+## Documentation
 
-From the root directory:
+**Developer Documentation:**
+- [Development Guide](docs/DEVELOPMENT.md) - Complete development setup and workflow
+- [Architecture Documentation](docs/ARCHITECTURE.md) - System design and architecture
+- [Environment Setup](docs/ENVIRONMENT_SETUP.md) - Environment variables configuration
+- [Deployment Guide](docs/DEPLOYMENT.md) - Production deployment instructions
+- [Testing Guide](docs/TESTING.md) - Testing procedures and critical paths
+- [Operations Guide](docs/OPERATIONS.md) - Daily operations and maintenance
+- [Troubleshooting](docs/TROUBLESHOOTING.md) - Common issues and solutions
+- [Database Backup](docs/DATABASE_BACKUP.md) - Backup and restore procedures
+- [Monitoring](docs/MONITORING.md) - Monitoring and alerting setup
+- [Security](docs/SECURITY.md) - Security best practices
+- [Contributing Guide](CONTRIBUTING.md) - How to contribute to the project
 
-- `pnpm dev` - Start all apps in development mode
-- `pnpm build` - Build all apps for production
-- `pnpm lint` - Lint all packages
-- `pnpm type-check` - Type check all packages
-- `pnpm clean` - Clean all build artifacts
-- `pnpm format` - Format code with Prettier
+**User Guides:**
+- [Church Admin Guide](docs/guides/CHURCH_ADMIN_GUIDE.md) - For church administrators
+- [Platform Admin Guide](docs/guides/PLATFORM_ADMIN_GUIDE.md) - For platform administrators
+- [User Guide](docs/guides/USER_GUIDE.md) - For general users
 
-## Database Management
+**App-Specific:**
+- [Web App README](apps/web/README.md)
+- [Church Portal README](apps/church-portal/README.md)
+- [Admin Dashboard README](apps/admin/README.md)
+- [GraphQL API README](apps/api/README.md)
 
-From `packages/database`:
+## Scripts
 
-- `pnpm db:generate` - Generate Prisma client
-- `pnpm db:push` - Push schema changes to database
-- `pnpm db:studio` - Open Prisma Studio (database GUI)
-- `pnpm db:migrate` - Create and run migrations
-- `pnpm db:seed` - Seed the database with initial data
+```bash
+# Development
+pnpm dev          # Start all apps in dev mode
+pnpm build        # Build all apps for production
+pnpm lint         # Lint all packages
+pnpm type-check   # Run TypeScript type checking
+pnpm clean        # Clean build artifacts
+pnpm format       # Format code with Prettier
+
+# Database (run from packages/database)
+pnpm db:generate  # Generate Prisma Client
+pnpm db:push      # Push schema to database (dev)
+pnpm db:migrate   # Run migrations (prod)
+pnpm db:seed      # Seed reference data
+pnpm db:studio    # Open Prisma Studio
+
+# Deployment
+./scripts/deploy-check.sh   # Pre-deployment checks
+./scripts/health-check.sh   # Post-deployment health check
+```
+
+## Key Features
+
+### Complete Church Profiles
+- **About Sections**: Who We Are, Our Vision, Statement of Faith, Our Story
+- **Worship**: Service times, languages, worship style
+- **Leadership**: Staff/pastor profiles with photos and bios
+- **Events**: Upcoming events calendar
+- **Sermons**: Sermon archive with YouTube/podcast links
+- **Photos**: Unlimited photo gallery with categories
+- **Give**: Donation information and links
+- **Connect**: Contact forms with reCAPTCHA protection
+
+### Platform Features
+- **Full-Text Search**: PostgreSQL full-text search for churches, sermons, and events
+- **Review System**: User reviews with moderation and church responses
+- **Authentication**: Role-based access control (USER, CHURCH_ADMIN, ADMIN)
+- **Platform Donations**: One-time and recurring donations via Stripe
+- **Email Notifications**: Automated emails for reviews, verifications, and donations
+- **Image Upload**: Server-side signed uploads to Cloudinary
+- **Analytics**: Profile views and engagement tracking
+- **Verification**: Church verification with badge display
+
+## Database Schema
+
+Core models:
+- **Prefecture** - Japanese prefectures (47)
+- **City** - Cities within prefectures
+- **Language** - Service languages
+- **Denomination** - Church denominations
+- **Church** - Core church data with full-text search
+- **ChurchProfile** - Extended church information
+- **ChurchStaff** - Pastors and leaders
+- **ChurchSocial** - Social media links
+- **ServiceTime** - Service schedules
+- **Event** - Church events
+- **Sermon** - Sermon archive
+- **Photo** - Church photos
+- **Review** - User reviews with moderation
+- **ReviewResponse** - Church responses to reviews
+- **User** - Platform users with role-based access
+- **PlatformDonation** - Donation records
+- **PlatformDonationSubscription** - Recurring donations
+
+See `packages/database/prisma/schema.prisma` for full schema.
 
 ## Apps
 
 ### Web App (`apps/web`)
-
-Public-facing website where users can:
-- Browse church directory
-- View detailed church profiles
-- Submit reviews
-- Make platform donations
-- Contact churches
-
-**URL**: http://localhost:3000
+Public-facing website where users can browse churches, view profiles, submit reviews, and make donations.
+- **URL**: http://localhost:3000
+- **README**: [apps/web/README.md](apps/web/README.md)
 
 ### Church Portal (`apps/church-portal`)
-
-Church administrators can:
-- Manage church profile and content
-- Upload photos
-- Add/edit staff, sermons, events
-- Respond to reviews
-- Request verification
-
-**URL**: http://localhost:3002
+Church administrators can manage their profile, photos, staff, events, sermons, and respond to reviews.
+- **URL**: http://localhost:3002
+- **README**: [apps/church-portal/README.md](apps/church-portal/README.md)
 
 ### Admin Dashboard (`apps/admin`)
-
-Platform administrators can:
-- Manage all churches
-- Approve verification requests
-- Moderate reviews
-- Manage users
-- View platform analytics
-
-**URL**: http://localhost:3003
+Platform administrators can manage churches, verify churches, moderate reviews, and view analytics.
+- **URL**: http://localhost:3003
+- **README**: [apps/admin/README.md](apps/admin/README.md)
 
 ### GraphQL API (`apps/api`)
-
-GraphQL API with:
-- Type-safe schema (Pothos)
-- Authentication context
-- Role-based access control
-- Optimized queries with DataLoader
-
-**URL**: http://localhost:3001/graphql
-
-## Authentication
-
-The platform uses NextAuth.js v5 with three user roles:
-
-- **USER**: Can browse directory, submit reviews, make donations
-- **CHURCH_ADMIN**: Can manage one church's content
-- **ADMIN**: Platform administrator with full access
-
-## Payments
-
-Platform donations are processed through Stripe Checkout:
-
-- One-time donations
-- Monthly recurring donations
-- Preset amounts: ¥500, ¥1,000, ¥3,000, ¥5,000
-- Custom amounts (minimum ¥100)
-- Secure webhook handling
-
-## Development Guidelines
-
-### Code Style
-
-- TypeScript strict mode enabled
-- ESLint for code quality
-- Prettier for formatting
-- Run `pnpm format` before committing
-
-### Git Workflow
-
-- Feature branches from `main`
-- Descriptive commit messages
-- Squash merge to main
-
-### Adding Dependencies
-
-Use workspace protocol for internal packages:
-
-```bash
-pnpm add @repo/database --filter @repo/graphql
-```
-
-For external dependencies:
-
-```bash
-pnpm add <package> --filter <app-or-package>
-```
+GraphQL API with type-safe schema, authentication, and role-based access control.
+- **URL**: http://localhost:3001/graphql
+- **README**: [apps/api/README.md](apps/api/README.md)
 
 ## Deployment
 
-See [DEPLOYMENT.md](./docs/DEPLOYMENT.md) for detailed deployment instructions.
+See [Deployment Guide](docs/DEPLOYMENT.md) for detailed instructions.
 
-### Quick Deployment Checklist
+**Quick Deploy to Render:**
 
-1. Set up PostgreSQL database (Render, Supabase, etc.)
-2. Run migrations: `pnpm db:push` or `pnpm db:migrate`
-3. Seed data: `pnpm db:seed`
-4. Set environment variables in hosting platform
-5. Deploy apps (Render, Vercel, etc.)
-6. Configure Stripe webhooks with production URL
-7. Test payment flow end-to-end
+1. Create PostgreSQL database on Render
+2. Create 4 web services (web, church-portal, admin, api)
+3. Set environment variables for each service
+4. Connect to GitHub repository (auto-deploy on push)
+5. Run migrations: `npx prisma migrate deploy`
+6. Configure custom domains
+7. Set up Stripe webhooks
+8. Configure Cloudinary, Resend, and reCAPTCHA
 
 ## Contributing
 
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+**Quick contribution steps:**
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Run tests and linting
+4. Run tests: `pnpm type-check && pnpm lint`
 5. Submit a pull request
-
-## Environment Variables
-
-See `.env.example` for all required environment variables.
-
-### Required Variables
-
-- `DATABASE_URL` - PostgreSQL connection string
-- `NEXTAUTH_SECRET` - Random string for session encryption
-- `NEXTAUTH_URL` - Base URL for authentication
-
-### Optional Variables
-
-- `STRIPE_SECRET_KEY` - For donations feature
-- `STRIPE_PUBLISHABLE_KEY` - For donations feature
-- `STRIPE_WEBHOOK_SECRET` - For webhook verification
-
-## Database Schema
-
-The platform uses the following main models:
-
-- **Prefecture** - Japanese prefectures
-- **City** - Cities within prefectures
-- **Language** - Service languages
-- **Denomination** - Church denominations
-- **Church** - Core church data
-- **ChurchProfile** - Extended church information
-- **ChurchStaff** - Pastors and leaders
-- **ServiceTime** - Service schedules
-- **Event** - Church events
-- **Sermon** - Sermon archive
-- **Review** - User reviews
-- **User** - Platform users
-- **PlatformDonation** - Donation records
-
-See `packages/database/prisma/schema.prisma` for full schema.
 
 ## License
 
-MIT
+MIT License - see [LICENSE](LICENSE) for details.
 
 ## Support
 
-For questions or issues:
-- Create an issue in GitHub
-- Email: support@churchconnect.jp
+- **Email**: support@churchconnect.jp
+- **Issues**: [GitHub Issues](https://github.com/yourusername/churchconnect/issues)
+- **Documentation**: [docs/](docs/)
+
+## Roadmap
+
+### Current Version (MVP)
+- Church directory with search and filters
+- Complete church profiles with 10 content sections
+- User authentication and reviews
+- Platform donations via Stripe
+- Church and admin portals
+- Full-text search
+
+### v2.0 - Church Donations
+- Stripe Connect integration
+- Church-specific donation processing
+- Monthly giving management
+- Donation analytics for churches
+
+### v2.1 - Enhanced Content
+- Blog posts feature
+- Sermon series grouping
+- Video sermon hosting
+- Photo gallery enhancements
+
+### v2.2 - User Features
+- User sermon logs
+- Visit history tracking
+- Church subscriptions
+- Email notifications for followed churches
+- Personalized recommendations
+
+### v2.3 - Mobile Apps
+- iOS app (React Native)
+- Android app (React Native)
+- Push notifications
+- Offline support
+
+### v3.0 - International Expansion
+- Multi-language support (Korean, Chinese)
+- Expansion to other countries
+- Country-specific features
+- Currency support
+
+## Acknowledgments
+
+- Design inspiration: [Coastal Church](https://coastalchurch.org)
+- Built with [Next.js](https://nextjs.org/), [Prisma](https://www.prisma.io/), and [Pothos GraphQL](https://pothos-graphql.dev/)
+- UI components from [shadcn/ui](https://ui.shadcn.com/)
+- Icons from [Lucide](https://lucide.dev/)
 
 ---
 
-Built with [Claude Code](https://claude.com/claude-code)
+**Made with love for the Christian community in Japan**
