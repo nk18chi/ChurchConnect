@@ -23,4 +23,7 @@ import './types/review'
 // User and auth types
 import './types/user'
 
+// Donation types
+import './types/donation'
+
 export const schema = builder.toSchema()
