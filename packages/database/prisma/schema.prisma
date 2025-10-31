@@ -265,6 +265,7 @@ model ChurchPhoto {
   churchId   String
 
   url        String
+  publicId   String
   caption    String?
   category   String
   order      Int      @default(0)
@@ -273,6 +274,7 @@ model ChurchPhoto {
   createdAt  DateTime @default(now())
 
   @@index([churchId, category, order])
+  @@index([publicId])
 }
 
 // ============================================

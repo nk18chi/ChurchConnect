@@ -35,13 +35,18 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Delete from Cloudinary
-    await deleteImage(publicId)
-
-    // Delete from database
+    // Delete from database FIRST to avoid race condition
     await prisma.churchPhoto.delete({
       where: { id: photoId },
     })
+
+    // Then delete from Cloudinary (failures here won't leave orphaned DB records)
+    try {
+      await deleteImage(publicId)
+    } catch (cloudinaryError) {
+      // Log but don't fail the request - database record is already deleted
+      console.error('Cloudinary deletion failed (DB already updated):', cloudinaryError)
+    }
 
     return NextResponse.json({ success: true })
   } catch (error) {
