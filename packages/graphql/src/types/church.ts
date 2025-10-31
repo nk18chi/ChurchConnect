@@ -1,8 +1,4 @@
 import { builder } from '../builder'
-import type { Language } from '@repo/database'
-
-// Create a Language object ref to use in the languages field
-const LanguageRef = builder.objectRef<Language>('Language')
 
 builder.prismaObject('Church', {
   fields: (t) => ({
@@ -40,12 +36,14 @@ builder.prismaObject('Church', {
     social: t.relation('social', { nullable: true }),
 
     // Languages (via ChurchLanguage join table)
-    languages: t.field({
-      type: [LanguageRef],
-      resolve: async (church, _args, ctx) => {
+    languages: t.prismaField({
+      type: ['Language'],
+      resolve: async (query, church, _args, ctx) => {
         const churchLanguages = await ctx.prisma.churchLanguage.findMany({
           where: { churchId: church.id },
-          include: { language: true },
+          include: {
+            language: query,
+          },
         })
         return churchLanguages.map((cl) => cl.language)
       },

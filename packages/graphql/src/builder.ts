@@ -25,4 +25,11 @@ export const builder = new SchemaBuilder<{
 
 // Define base Query and Mutation types
 builder.queryType({})
-builder.mutationType({})
+builder.mutationType({
+  fields: (t) => ({
+    // Placeholder mutation - will be replaced with actual mutations in later phases
+    _placeholder: t.boolean({
+      resolve: () => true,
+    }),
+  }),
+})
