@@ -15,6 +15,8 @@
     "@prisma/client": "^5.13.0"
   },
   "devDependencies": {
+    "@pothos/core": "^3.41.0",
+    "@pothos/plugin-prisma": "^3.65.0",
     "@repo/typescript-config": "workspace:*",
     "prisma": "^5.13.0",
     "tsx": "^4.7.2",

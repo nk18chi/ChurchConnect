@@ -27,6 +27,12 @@ importers:
         specifier: ^5.13.0
         version: 5.22.0(prisma@5.22.0)
     devDependencies:
+      '@pothos/core':
+        specifier: ^3.41.0
+        version: 3.41.2(graphql@16.11.0)
+      '@pothos/plugin-prisma':
+        specifier: ^3.65.0
+        version: 3.65.3(@pothos/core@3.41.2)(@prisma/client@5.22.0)(graphql@16.11.0)(typescript@5.9.3)
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
@@ -550,7 +556,6 @@ packages:
       graphql: '>=15.1.0'
     dependencies:
       graphql: 16.11.0
-    dev: false
 
   /@pothos/plugin-prisma@3.65.3(@pothos/core@3.41.2)(@prisma/client@5.22.0)(graphql@16.11.0)(typescript@5.9.3):
     resolution: {integrity: sha512-fLdweQFjMBaGHgpO5CMQe8rKHBaVTEvYV4PLCtEDXC7mElnGKZBF5XVTk+d2l9P54DYchcYwDHWZ1CPpjF03ew==}
@@ -566,7 +571,6 @@ packages:
       '@prisma/generator-helper': 5.22.0
       graphql: 16.11.0
       typescript: 5.9.3
-    dev: false
 
   /@prisma/client@5.22.0(prisma@5.22.0):
     resolution: {integrity: sha512-M0SVXfyHnQREBKxCgyo7sffrKttwE6R8PMq330MIUF0pTwjUhLbW84pFDlf06B27XyCR++VtjugEnIHdr07SVA==}
@@ -579,7 +583,6 @@ packages:
         optional: true
     dependencies:
       prisma: 5.22.0
-    dev: false
 
   /@prisma/debug@5.22.0:
     resolution: {integrity: sha512-AUt44v3YJeggO2ZU5BkXI7M4hu9BF2zzH2iF2V5pyXT/lRTyWiElZ7It+bRH1EshoMRxHgpYg4VB6rCM+mG5jQ==}
@@ -607,7 +610,6 @@ packages:
     resolution: {integrity: sha512-LwqcBQ5/QsuAaLNQZAIVIAJDJBMjHwMwn16e06IYx/3Okj/xEEfw9IvrqB2cJCl3b2mCBlh3eVH0w9WGmi4aHg==}
     dependencies:
       '@prisma/debug': 5.22.0
-    dev: false
 
   /@prisma/get-platform@5.22.0:
     resolution: {integrity: sha512-pHhpQdr1UPFpt+zFfnPazhulaZYCUqeIcPpJViYoq9R+D/yw4fjE+CtnsnKzPYm0ddUbeXUzjGVGIRVgPDCk4Q==}
@@ -2588,7 +2590,6 @@ packages:
   /graphql@16.11.0:
     resolution: {integrity: sha512-mS1lbMsxgQj6hge1XZ6p7GPhbrtFwUFYi3wRzXAC/FmYnyXMTvvI3td3rjmQ2u8ewXueaSvRPWaEcgVVOT9Jnw==}
     engines: {node: ^12.22.0 || ^14.16.0 || ^16.0.0 || >=17.0.0}
-    dev: false
 
   /handlebars@4.7.8:
     resolution: {integrity: sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==}
