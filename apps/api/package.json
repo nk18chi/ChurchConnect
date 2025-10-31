@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@apollo/server": "^4.10.4",
+    "@repo/auth": "workspace:*",
     "@repo/database": "workspace:*",
     "@repo/graphql": "workspace:*",
     "cors": "^2.8.5",

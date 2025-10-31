@@ -20,4 +20,7 @@ import './types/sermon'
 import './types/event'
 import './types/review'
 
+// User and auth types
+import './types/user'
+
 export const schema = builder.toSchema()

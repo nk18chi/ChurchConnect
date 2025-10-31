@@ -4,6 +4,7 @@ import "./globals.css";
 import { ApolloProvider } from "@/lib/apollo-provider";
 import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
+import SessionProvider from "./components/session-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -53,13 +54,15 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.variable}>
-        <ApolloProvider>
-          <div className="flex min-h-screen flex-col">
-            <Header />
-            <main className="flex-1">{children}</main>
-            <Footer />
-          </div>
-        </ApolloProvider>
+        <SessionProvider>
+          <ApolloProvider>
+            <div className="flex min-h-screen flex-col">
+              <Header />
+              <main className="flex-1">{children}</main>
+              <Footer />
+            </div>
+          </ApolloProvider>
+        </SessionProvider>
       </body>
     </html>
   );

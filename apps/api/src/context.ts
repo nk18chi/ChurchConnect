@@ -1,4 +1,5 @@
 import { prisma } from '@repo/database'
+import { auth } from '@repo/auth'
 
 export interface Context {
   prisma: typeof prisma
@@ -6,12 +7,13 @@ export interface Context {
   userRole?: string
 }
 
-export async function createContext(): Promise<Context> {
-  // TODO: Extract user info from JWT token in Authorization header
-  // For now, return a context with just the Prisma client
+export async function createContext({ req }: { req: Request }): Promise<Context> {
+  // Extract session from NextAuth
+  const session = await auth()
+
   return {
     prisma,
-    userId: undefined,
-    userRole: undefined,
+    userId: session?.user?.id,
+    userRole: session?.user?.role,
   }
 }
