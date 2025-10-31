@@ -105,6 +105,7 @@ model Church {
   id             String      @id @default(cuid())
   name           String
   slug           String      @unique
+  description    String?     @db.Text
 
   denomination   Denomination @relation(fields: [denominationId], references: [id])
   denominationId String
@@ -149,10 +150,14 @@ model Church {
   updatedAt      DateTime   @updatedAt
   isPublished    Boolean    @default(false)
 
+  // Full-text search
+  searchVector   Unsupported("tsvector")?
+
   @@index([prefectureId, cityId])
   @@index([denominationId])
   @@index([isVerified, isComplete])
   @@index([isDeleted])
+  @@index([searchVector], type: Gin)
 }
 
 // ============================================
@@ -299,7 +304,11 @@ model Sermon {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
+  // Full-text search
+  searchVector Unsupported("tsvector")?
+
   @@index([churchId, date])
+  @@index([searchVector], type: Gin)
 }
 
 // ============================================
@@ -326,7 +335,11 @@ model Event {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
+  // Full-text search
+  searchVector    Unsupported("tsvector")?
+
   @@index([churchId, startDate])
+  @@index([searchVector], type: Gin)
 }
 
 // ============================================

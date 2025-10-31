@@ -26,4 +26,7 @@ import './types/user'
 // Donation types
 import './types/donation'
 
+// Search types
+import './types/search'
+
 export const schema = builder.toSchema()

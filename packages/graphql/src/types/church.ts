@@ -5,6 +5,7 @@ builder.prismaObject('Church', {
     id: t.exposeID('id'),
     name: t.exposeString('name'),
     slug: t.exposeString('slug'),
+    description: t.exposeString('description', { nullable: true }),
 
     // Location
     prefecture: t.relation('prefecture'),
