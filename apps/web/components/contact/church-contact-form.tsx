@@ -6,7 +6,12 @@ import { Input } from "@repo/ui";
 import { Textarea } from "@repo/ui";
 import { Label } from "@repo/ui";
 
-export function ContactForm() {
+interface ChurchContactFormProps {
+  churchId: string;
+  churchName: string;
+}
+
+export function ChurchContactForm({ churchId, churchName }: ChurchContactFormProps) {
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,12 +29,15 @@ export function ContactForm() {
     setSubmitStatus("idle");
 
     try {
-      const response = await fetch("/api/contact", {
+      const response = await fetch("/api/churches/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          churchId,
+          ...formData,
+        }),
       });
 
       const data = await response.json();
@@ -105,25 +113,25 @@ export function ContactForm() {
           value={formData.message}
           onChange={handleChange}
           required
-          placeholder="Your message..."
+          placeholder={`Your message to ${churchName}...`}
           rows={6}
         />
       </div>
 
       {submitStatus === "success" && (
         <div className="rounded-lg bg-green-50 p-4 text-sm text-green-800">
-          Thank you for your message! We'll get back to you as soon as possible.
+          Thank you for your message! {churchName} will get back to you as soon as possible.
         </div>
       )}
 
       {submitStatus === "error" && (
         <div className="rounded-lg bg-red-50 p-4 text-sm text-red-800">
-          Something went wrong. Please try again later.
+          Something went wrong. Please try again later or contact the church directly.
         </div>
       )}
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? "Sending..." : "Send Message"}
+        {isSubmitting ? "Sending..." : "Send Message to Church"}
       </Button>
     </form>
   );

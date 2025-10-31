@@ -1,6 +1,5 @@
 import {
   Body,
-  Button,
   Container,
   Head,
   Heading,
@@ -10,51 +9,41 @@ import {
   Text,
 } from '@react-email/components'
 
-interface ReviewNotificationEmailProps {
-  churchName: string
+interface ReviewSubmittedEmailProps {
   reviewerName: string
-  rating?: number
+  churchName: string
   reviewContent: string
-  reviewDate: string
-  reviewUrl: string
 }
 
-export function ReviewNotificationEmail({
-  churchName,
+export function ReviewSubmittedEmail({
   reviewerName,
-  rating,
+  churchName,
   reviewContent,
-  reviewDate,
-  reviewUrl,
-}: ReviewNotificationEmailProps) {
+}: ReviewSubmittedEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>New review for {churchName}</Preview>
+      <Preview>Your review for {churchName} has been submitted</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>New Review Approved</Heading>
+          <Heading style={h1}>Review Submitted</Heading>
 
           <Text style={text}>
-            A new review has been approved and published for {churchName}.
+            Hi {reviewerName},
+          </Text>
+
+          <Text style={text}>
+            Thank you for submitting a review for {churchName}. Your review is currently awaiting moderation and will be published once approved by our team.
           </Text>
 
           <Section style={reviewBox}>
-            <Text style={reviewerText}>
-              {reviewerName} • {reviewDate}
-            </Text>
+            <Text style={reviewLabel}>Your Review:</Text>
             <Text style={reviewText}>{reviewContent}</Text>
-          </Section>
-
-          <Section style={buttonSection}>
-            <Button style={button} href={reviewUrl}>
-              View Review & Respond
-            </Button>
           </Section>
 
           <Section style={footer}>
             <Text style={footerText}>
-              You can respond to this review in your church portal.
+              We review all submissions to ensure they meet our community guidelines. You'll receive an email notification once your review is approved.
             </Text>
           </Section>
         </Container>
@@ -88,6 +77,7 @@ const text = {
   lineHeight: '24px',
   color: '#333',
   padding: '0 40px',
+  marginBottom: '20px',
 }
 
 const reviewBox = {
@@ -98,8 +88,9 @@ const reviewBox = {
   margin: '20px 40px',
 }
 
-const reviewerText = {
+const reviewLabel = {
   fontSize: '14px',
+  fontWeight: 'bold',
   color: '#666',
   marginBottom: '8px',
 }
@@ -109,23 +100,6 @@ const reviewText = {
   lineHeight: '24px',
   color: '#333',
   margin: '0',
-}
-
-const buttonSection = {
-  padding: '0 40px',
-  marginTop: '20px',
-}
-
-const button = {
-  backgroundColor: '#ed1c24',
-  borderRadius: '6px',
-  color: '#fff',
-  fontSize: '16px',
-  fontWeight: 'bold',
-  textDecoration: 'none',
-  textAlign: 'center' as const,
-  display: 'block',
-  padding: '12px 20px',
 }
 
 const footer = {

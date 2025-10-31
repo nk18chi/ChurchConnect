@@ -10,51 +10,49 @@ import {
   Text,
 } from '@react-email/components'
 
-interface ReviewNotificationEmailProps {
-  churchName: string
+interface ReviewApprovedEmailProps {
   reviewerName: string
-  rating?: number
+  churchName: string
   reviewContent: string
-  reviewDate: string
   reviewUrl: string
 }
 
-export function ReviewNotificationEmail({
-  churchName,
+export function ReviewApprovedEmail({
   reviewerName,
-  rating,
+  churchName,
   reviewContent,
-  reviewDate,
   reviewUrl,
-}: ReviewNotificationEmailProps) {
+}: ReviewApprovedEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>New review for {churchName}</Preview>
+      <Preview>Your review for {churchName} has been approved</Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={h1}>New Review Approved</Heading>
+          <Heading style={h1}>Review Approved</Heading>
 
           <Text style={text}>
-            A new review has been approved and published for {churchName}.
+            Hi {reviewerName},
+          </Text>
+
+          <Text style={text}>
+            Great news! Your review for {churchName} has been approved and is now live on ChurchConnect Japan.
           </Text>
 
           <Section style={reviewBox}>
-            <Text style={reviewerText}>
-              {reviewerName} • {reviewDate}
-            </Text>
+            <Text style={reviewLabel}>Your Review:</Text>
             <Text style={reviewText}>{reviewContent}</Text>
           </Section>
 
           <Section style={buttonSection}>
             <Button style={button} href={reviewUrl}>
-              View Review & Respond
+              View Your Review
             </Button>
           </Section>
 
           <Section style={footer}>
             <Text style={footerText}>
-              You can respond to this review in your church portal.
+              Thank you for contributing to the ChurchConnect Japan community!
             </Text>
           </Section>
         </Container>
@@ -88,6 +86,7 @@ const text = {
   lineHeight: '24px',
   color: '#333',
   padding: '0 40px',
+  marginBottom: '20px',
 }
 
 const reviewBox = {
@@ -98,8 +97,9 @@ const reviewBox = {
   margin: '20px 40px',
 }
 
-const reviewerText = {
+const reviewLabel = {
   fontSize: '14px',
+  fontWeight: 'bold',
   color: '#666',
   marginBottom: '8px',
 }

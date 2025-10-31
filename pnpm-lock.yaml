@@ -242,6 +242,9 @@ importers:
       '@repo/database':
         specifier: workspace:*
         version: link:../../packages/database
+      '@repo/email':
+        specifier: workspace:*
+        version: link:../../packages/email
       '@repo/graphql':
         specifier: workspace:*
         version: link:../../packages/graphql
@@ -275,6 +278,9 @@ importers:
       stripe:
         specifier: ^19.2.0
         version: 19.2.0(@types/node@20.19.24)
+      zod:
+        specifier: ^3.25.76
+        version: 3.25.76
     devDependencies:
       '@repo/eslint-config':
         specifier: workspace:*
@@ -385,7 +391,7 @@ importers:
         specifier: ^0.0.16
         version: 0.0.16(@types/react@18.3.26)(react@18.3.1)
       react:
-        specifier: ^18.2.0
+        specifier: ^18.3.1
         version: 18.3.1
       resend:
         specifier: ^3.2.0
@@ -442,6 +448,9 @@ importers:
       '@repo/database':
         specifier: workspace:*
         version: link:../database
+      '@repo/email':
+        specifier: workspace:*
+        version: link:../email
       graphql:
         specifier: ^16.8.1
         version: 16.11.0

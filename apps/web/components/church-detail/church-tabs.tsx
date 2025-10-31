@@ -5,9 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/ui";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/ui";
 import { Badge } from "@repo/ui";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
+import { ChurchContactForm } from "@/components/contact/church-contact-form";
 
 interface ChurchTabsProps {
   church: {
+    id: string;
+    name: string;
     profile?: {
       whoWeAre?: string | null;
       vision?: string | null;
@@ -68,6 +71,7 @@ interface ChurchTabsProps {
       spotifyUrl?: string | null;
       lineUrl?: string | null;
     } | null;
+    email?: string | null;
     contactEmail?: string | null;
     website?: string | null;
   };
@@ -377,89 +381,112 @@ export function ChurchTabs({ church }: ChurchTabsProps) {
           </TabsContent>
 
           <TabsContent value="connect" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Get in Touch</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {church.contactEmail && (
-                  <div>
-                    <p className="text-sm font-medium">Email</p>
-                    <a
-                      href={`mailto:${church.contactEmail}`}
-                      className="text-primary hover:underline"
-                    >
-                      {church.contactEmail}
-                    </a>
-                  </div>
-                )}
-                {church.website && (
-                  <div>
-                    <p className="text-sm font-medium">Website</p>
-                    <a
-                      href={church.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline"
-                    >
-                      {church.website}
-                    </a>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Contact Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {church.contactEmail && (
+                      <div>
+                        <p className="text-sm font-medium">Email</p>
+                        <a
+                          href={`mailto:${church.contactEmail}`}
+                          className="text-primary hover:underline"
+                        >
+                          {church.contactEmail}
+                        </a>
+                      </div>
+                    )}
+                    {church.website && (
+                      <div>
+                        <p className="text-sm font-medium">Website</p>
+                        <a
+                          href={church.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {church.website}
+                        </a>
+                      </div>
+                    )}
+                    {!church.contactEmail && !church.website && (
+                      <p className="text-sm text-gray-600">
+                        No contact information available.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
 
-            {church.social && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Social Media</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {church.social.youtubeUrl && (
-                      <a
-                        href={church.social.youtubeUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
-                      >
-                        YouTube
-                      </a>
-                    )}
-                    {church.social.instagramUrl && (
-                      <a
-                        href={church.social.instagramUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
-                      >
-                        Instagram
-                      </a>
-                    )}
-                    {church.social.facebookUrl && (
-                      <a
-                        href={church.social.facebookUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
-                      >
-                        Facebook
-                      </a>
-                    )}
-                    {church.social.twitterUrl && (
-                      <a
-                        href={church.social.twitterUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-primary hover:underline"
-                      >
-                        Twitter
-                      </a>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
+                {church.social && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Social Media</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {church.social.youtubeUrl && (
+                          <a
+                            href={church.social.youtubeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline"
+                          >
+                            YouTube
+                          </a>
+                        )}
+                        {church.social.instagramUrl && (
+                          <a
+                            href={church.social.instagramUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline"
+                          >
+                            Instagram
+                          </a>
+                        )}
+                        {church.social.facebookUrl && (
+                          <a
+                            href={church.social.facebookUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline"
+                          >
+                            Facebook
+                          </a>
+                        )}
+                        {church.social.twitterUrl && (
+                          <a
+                            href={church.social.twitterUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-primary hover:underline"
+                          >
+                            Twitter
+                          </a>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+
+              {(church.contactEmail || church.email) && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Send a Message</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ChurchContactForm
+                      churchId={church.id}
+                      churchName={church.name}
+                    />
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
         </div>
       </Tabs>

@@ -2,12 +2,16 @@ import { render } from '@react-email/components'
 import { resend, EMAIL_FROM, ADMIN_EMAIL } from './config'
 import { ContactFormEmail } from './templates/contact-form'
 import { ReviewNotificationEmail } from './templates/review-notification'
+import { ReviewSubmittedEmail } from './templates/review-submitted'
+import { ReviewApprovedEmail } from './templates/review-approved'
 import { DonationReceiptEmail } from './templates/donation-receipt'
 
 // Export config and templates for direct use if needed
 export { resend, EMAIL_FROM, ADMIN_EMAIL }
 export { ContactFormEmail } from './templates/contact-form'
 export { ReviewNotificationEmail } from './templates/review-notification'
+export { ReviewSubmittedEmail } from './templates/review-submitted'
+export { ReviewApprovedEmail } from './templates/review-approved'
 export { DonationReceiptEmail } from './templates/donation-receipt'
 
 /**
@@ -53,7 +57,6 @@ export async function sendContactFormEmail(params: {
  *   to: 'admin@church.com',
  *   churchName: 'Tokyo Gospel Church',
  *   reviewerName: 'John Doe',
- *   rating: 5,
  *   reviewContent: 'Great church with a welcoming community!',
  *   reviewDate: 'January 15, 2025',
  *   reviewUrl: 'https://portal.churchconnect.jp/reviews/123'
@@ -64,7 +67,7 @@ export async function sendReviewNotification(params: {
   to: string
   churchName: string
   reviewerName: string
-  rating: number
+  rating?: number
   reviewContent: string
   reviewDate: string
   reviewUrl: string
@@ -75,6 +78,66 @@ export async function sendReviewNotification(params: {
     from: EMAIL_FROM,
     to: params.to,
     subject: `New review for ${params.churchName}`,
+    html,
+  })
+}
+
+/**
+ * Send a review submission confirmation email to the reviewer
+ *
+ * @example
+ * ```typescript
+ * await sendReviewSubmittedEmail({
+ *   to: 'reviewer@example.com',
+ *   reviewerName: 'John Doe',
+ *   churchName: 'Tokyo Gospel Church',
+ *   reviewContent: 'Great church with a welcoming community!'
+ * })
+ * ```
+ */
+export async function sendReviewSubmittedEmail(params: {
+  to: string
+  reviewerName: string
+  churchName: string
+  reviewContent: string
+}) {
+  const html = render(ReviewSubmittedEmail(params))
+
+  return resend.emails.send({
+    from: EMAIL_FROM,
+    to: params.to,
+    subject: `Your review for ${params.churchName} has been submitted`,
+    html,
+  })
+}
+
+/**
+ * Send a review approval notification email to the reviewer
+ *
+ * @example
+ * ```typescript
+ * await sendReviewApprovedEmail({
+ *   to: 'reviewer@example.com',
+ *   reviewerName: 'John Doe',
+ *   churchName: 'Tokyo Gospel Church',
+ *   reviewContent: 'Great church with a welcoming community!',
+ *   reviewUrl: 'https://churchconnect.jp/churches/tokyo-gospel-church'
+ * })
+ * ```
+ */
+export async function sendReviewApprovedEmail(params: {
+  to: string
+  reviewerName: string
+  churchName: string
+  reviewContent: string
+  reviewUrl: string
+}) {
+  const html = render(ReviewApprovedEmail(params))
+
+  return resend.emails.send({
+    from: EMAIL_FROM,
+    to: params.to,
+    subject: `Your review for ${params.churchName} has been approved`,
     html,
   })
 }
@@ -121,4 +184,6 @@ export async function sendDonationReceipt(params: {
  */
 export type ContactFormEmailParams = Parameters<typeof sendContactFormEmail>[0]
 export type ReviewNotificationParams = Parameters<typeof sendReviewNotification>[0]
+export type ReviewSubmittedEmailParams = Parameters<typeof sendReviewSubmittedEmail>[0]
+export type ReviewApprovedEmailParams = Parameters<typeof sendReviewApprovedEmail>[0]
 export type DonationReceiptParams = Parameters<typeof sendDonationReceipt>[0]
