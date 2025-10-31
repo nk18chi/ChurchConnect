@@ -1,0 +1,21 @@
+{
+  "name": "@repo/graphql",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "type-check": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@pothos/core": "^3.41.0",
+    "@pothos/plugin-prisma": "^3.65.0",
+    "@repo/database": "workspace:*",
+    "graphql": "^16.8.1"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^20.12.7",
+    "typescript": "^5.4.5"
+  }
+}
