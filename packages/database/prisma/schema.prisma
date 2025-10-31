@@ -1,0 +1,516 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// LOCATION MODELS
+// ============================================
+
+model Prefecture {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  nameJa    String   @unique
+
+  cities    City[]
+  churches  Church[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model City {
+  id           String     @id @default(cuid())
+  name         String
+  nameJa       String
+  prefecture   Prefecture @relation(fields: [prefectureId], references: [id])
+  prefectureId String
+
+  churches     Church[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([prefectureId, name])
+  @@index([prefectureId])
+}
+
+// ============================================
+// LANGUAGE MODELS
+// ============================================
+
+model Language {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  nameJa          String           @unique
+  code            String           @unique
+
+  churchLanguages ChurchLanguage[]
+  serviceTimes    ServiceTime[]
+
+  createdAt       DateTime @default(now())
+
+  @@index([code])
+}
+
+model ChurchLanguage {
+  id         String   @id @default(cuid())
+  church     Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId   String
+  language   Language @relation(fields: [languageId], references: [id])
+  languageId String
+
+  createdAt  DateTime @default(now())
+
+  @@unique([churchId, languageId])
+  @@index([churchId])
+  @@index([languageId])
+}
+
+// ============================================
+// DENOMINATION MODEL
+// ============================================
+
+model Denomination {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  nameJa      String    @unique
+  category    String
+
+  churches    Church[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ============================================
+// CORE CHURCH MODEL
+// ============================================
+
+model Church {
+  id             String      @id @default(cuid())
+  name           String
+  slug           String      @unique
+
+  denomination   Denomination @relation(fields: [denominationId], references: [id])
+  denominationId String
+
+  prefecture     Prefecture @relation(fields: [prefectureId], references: [id])
+  prefectureId   String
+  city           City       @relation(fields: [cityId], references: [id])
+  cityId         String
+  address        String
+  postalCode     String?
+  latitude       Float?
+  longitude      Float?
+
+  phone          String?
+  email          String?
+  website        String?
+  contactEmail   String?
+
+  heroImageUrl   String?
+
+  isVerified     Boolean    @default(false)
+  isComplete     Boolean    @default(false)
+  isDeleted      Boolean    @default(false)
+
+  profile        ChurchProfile?
+  social         ChurchSocial?
+  languages      ChurchLanguage[]
+  serviceTimes   ServiceTime[]
+  photos         ChurchPhoto[]
+  staff          ChurchStaff[]
+  sermons        Sermon[]
+  events         Event[]
+  reviews        Review[]
+  donations      PlatformDonation[]
+  verification   VerificationRequest?
+  analytics      ChurchAnalytics?
+
+  adminUserId    String?    @unique
+  adminUser      User?      @relation("ChurchAdmin", fields: [adminUserId], references: [id])
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  isPublished    Boolean    @default(false)
+
+  @@index([prefectureId, cityId])
+  @@index([denominationId])
+  @@index([isVerified, isComplete])
+  @@index([isDeleted])
+}
+
+// ============================================
+// CHURCH PROFILE (About Content)
+// ============================================
+
+model ChurchProfile {
+  id               String   @id @default(cuid())
+  church           Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId         String   @unique
+
+  whoWeAre         String?  @db.Text
+  vision           String?  @db.Text
+  statementOfFaith String?  @db.Text
+  storyOfChurch    String?  @db.Text
+
+  kidChurchInfo    String?  @db.Text
+
+  whatToExpect     String?  @db.Text
+  dressCode        String?
+  worshipStyle     String?
+  accessibility    String[]
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([churchId])
+}
+
+// ============================================
+// CHURCH SOCIAL (Social Media Links)
+// ============================================
+
+model ChurchSocial {
+  id           String   @id @default(cuid())
+  church       Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId     String   @unique
+
+  youtubeUrl   String?
+  podcastUrl   String?
+  instagramUrl String?
+  twitterUrl   String?
+  facebookUrl  String?
+  spotifyUrl   String?
+  lineUrl      String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([churchId])
+}
+
+// ============================================
+// CHURCH STAFF (Pastors & Leaders)
+// ============================================
+
+model ChurchStaff {
+  id           String   @id @default(cuid())
+  church       Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId     String
+
+  name         String
+  title        String?
+  role         String?
+  bio          String?  @db.Text
+  photoUrl     String?
+  credentials  String?
+  email        String?
+  order        Int      @default(0)
+
+  twitterUrl   String?
+  instagramUrl String?
+  blogUrl      String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([churchId, order])
+}
+
+// ============================================
+// SERVICE TIMES
+// ============================================
+
+model ServiceTime {
+  id          String   @id @default(cuid())
+  church      Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId    String
+
+  dayOfWeek   Int
+  startTime   String
+  endTime     String?
+  language    Language @relation(fields: [languageId], references: [id])
+  languageId  String
+  serviceType String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([churchId])
+}
+
+// ============================================
+// CHURCH PHOTOS
+// ============================================
+
+model ChurchPhoto {
+  id         String   @id @default(cuid())
+  church     Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId   String
+
+  url        String
+  caption    String?
+  category   String
+  order      Int      @default(0)
+  uploadedBy String
+
+  createdAt  DateTime @default(now())
+
+  @@index([churchId, category, order])
+}
+
+// ============================================
+// SERMONS
+// ============================================
+
+model Sermon {
+  id           String   @id @default(cuid())
+  church       Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId     String
+
+  title        String
+  description  String?  @db.Text
+  preacher     String
+  passage      String?
+  date         DateTime
+
+  youtubeUrl   String?
+  podcastUrl   String?
+  notesUrl     String?
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([churchId, date])
+}
+
+// ============================================
+// EVENTS
+// ============================================
+
+model Event {
+  id              String   @id @default(cuid())
+  church          Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId        String
+
+  title           String
+  description     String?  @db.Text
+  startDate       DateTime
+  endDate         DateTime?
+  location        String?
+  isOnline        Boolean  @default(false)
+  registrationUrl String?
+  imageUrl        String?
+
+  isRecurring     Boolean  @default(false)
+  recurrenceRule  String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([churchId, startDate])
+}
+
+// ============================================
+// REVIEWS
+// ============================================
+
+model Review {
+  id             String         @id @default(cuid())
+  church         Church         @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId       String
+  user           User           @relation(fields: [userId], references: [id])
+  userId         String
+
+  content        String         @db.Text
+  visitDate      DateTime?
+  experienceType String?
+
+  status         ReviewStatus   @default(PENDING)
+  moderatedAt    DateTime?
+  moderatedBy    String?
+  moderationNote String?
+
+  response       ReviewResponse?
+
+  isFlagged      Boolean        @default(false)
+  flagReason     String?
+  flaggedAt      DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([churchId, status])
+  @@index([userId])
+}
+
+model ReviewResponse {
+  id          String   @id @default(cuid())
+  review      Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  reviewId    String   @unique
+
+  content     String   @db.Text
+  respondedBy String
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum ReviewStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// ============================================
+// PLATFORM DONATIONS (MVP - No Church Donations)
+// ============================================
+
+model PlatformDonation {
+  id              String   @id @default(cuid())
+  donor           User?    @relation(fields: [donorId], references: [id])
+  donorId         String?
+  church          Church?  @relation(fields: [churchId], references: [id])
+  churchId        String?
+
+  stripePaymentId String   @unique
+
+  amount          Int
+  currency        String   @default("jpy")
+  type            DonationType
+  status          DonationStatus
+
+  subscriptionId  String?
+  subscription    PlatformDonationSubscription? @relation(fields: [subscriptionId], references: [id])
+
+  createdAt       DateTime @default(now())
+
+  @@index([donorId])
+  @@index([churchId])
+}
+
+model PlatformDonationSubscription {
+  id                   String             @id @default(cuid())
+  donor                User?              @relation(fields: [donorId], references: [id])
+  donorId              String?
+
+  stripeSubscriptionId String             @unique
+  amount               Int
+  status               SubscriptionStatus
+
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+
+  donations            PlatformDonation[]
+
+  createdAt            DateTime @default(now())
+
+  @@index([donorId])
+}
+
+enum DonationType {
+  ONE_TIME
+  MONTHLY
+}
+
+enum DonationStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  UNPAID
+}
+
+// ============================================
+// USER
+// ============================================
+
+model User {
+  id                            String    @id @default(cuid())
+  email                         String    @unique
+  name                          String?
+  password                      String?
+  role                          UserRole  @default(USER)
+
+  stripeCustomerId              String?   @unique
+
+  reviews                       Review[]
+  managedChurch                 Church?   @relation("ChurchAdmin")
+  platformDonations             PlatformDonation[]
+  platformDonationSubscriptions PlatformDonationSubscription[]
+
+  createdAt                     DateTime @default(now())
+  updatedAt                     DateTime @updatedAt
+
+  @@index([role])
+}
+
+enum UserRole {
+  USER
+  CHURCH_ADMIN
+  ADMIN
+}
+
+// ============================================
+// VERIFICATION & ANALYTICS
+// ============================================
+
+model VerificationRequest {
+  id            String             @id @default(cuid())
+  church        Church             @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId      String             @unique
+
+  requestedBy   String
+  requestEmail  String
+  documentUrl   String
+  notes         String?            @db.Text
+
+  status        VerificationStatus @default(PENDING)
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  reviewNote    String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([status])
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model ChurchAnalytics {
+  id             String   @id @default(cuid())
+  church         Church   @relation(fields: [churchId], references: [id], onDelete: Cascade)
+  churchId       String   @unique
+
+  totalViews     Int      @default(0)
+  viewsThisWeek  Int      @default(0)
+  viewsThisMonth Int      @default(0)
+  lastViewedAt   DateTime?
+
+  updatedAt      DateTime @updatedAt
+
+  @@index([churchId])
+}
