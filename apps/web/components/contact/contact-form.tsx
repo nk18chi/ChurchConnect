@@ -5,8 +5,10 @@ import { Button } from "@repo/ui";
 import { Input } from "@repo/ui";
 import { Textarea } from "@repo/ui";
 import { Label } from "@repo/ui";
+import { useRecaptcha } from "@/hooks/use-recaptcha";
 
 export function ContactForm() {
+  const { executeRecaptcha } = useRecaptcha();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -24,12 +26,18 @@ export function ContactForm() {
     setSubmitStatus("idle");
 
     try {
+      // Get reCAPTCHA token
+      const recaptchaToken = await executeRecaptcha("contact_form");
+
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          recaptchaToken,
+        }),
       });
 
       const data = await response.json();

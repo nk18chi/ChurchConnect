@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { sendContactFormEmail } from '@repo/email'
 import { prisma } from '@repo/database'
+import { verifyRecaptchaToken } from '@/lib/recaptcha'
 
 // Rate limiting map: IP -> array of timestamps
 const rateLimitMap = new Map<string, number[]>()
@@ -53,6 +54,7 @@ const churchContactFormSchema = z.object({
   email: z.string().email('Invalid email address'),
   subject: z.string().min(1, 'Subject is required').max(200),
   message: z.string().min(10, 'Message must be at least 10 characters').max(2000),
+  recaptchaToken: z.string().min(1, 'reCAPTCHA token is required'),
 })
 
 export async function POST(request: NextRequest) {
@@ -88,7 +90,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const { churchId, name, email, subject, message } = result.data
+    const { churchId, name, email, subject, message, recaptchaToken } = result.data
+
+    // Verify reCAPTCHA token
+    const recaptchaResult = await verifyRecaptchaToken(
+      recaptchaToken,
+      'church_contact_form'
+    )
+
+    if (!recaptchaResult.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'reCAPTCHA verification failed. Please try again.'
+        },
+        { status: 400 }
+      )
+    }
 
     // Get church from database
     const church = await prisma.church.findUnique({

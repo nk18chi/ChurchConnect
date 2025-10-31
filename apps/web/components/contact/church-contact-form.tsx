@@ -5,6 +5,7 @@ import { Button } from "@repo/ui";
 import { Input } from "@repo/ui";
 import { Textarea } from "@repo/ui";
 import { Label } from "@repo/ui";
+import { useRecaptcha } from "@/hooks/use-recaptcha";
 
 interface ChurchContactFormProps {
   churchId: string;
@@ -12,6 +13,7 @@ interface ChurchContactFormProps {
 }
 
 export function ChurchContactForm({ churchId, churchName }: ChurchContactFormProps) {
+  const { executeRecaptcha } = useRecaptcha();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -29,6 +31,9 @@ export function ChurchContactForm({ churchId, churchName }: ChurchContactFormPro
     setSubmitStatus("idle");
 
     try {
+      // Get reCAPTCHA token
+      const recaptchaToken = await executeRecaptcha("church_contact_form");
+
       const response = await fetch("/api/churches/contact", {
         method: "POST",
         headers: {
@@ -37,6 +42,7 @@ export function ChurchContactForm({ churchId, churchName }: ChurchContactFormPro
         body: JSON.stringify({
           churchId,
           ...formData,
+          recaptchaToken,
         }),
       });
 
