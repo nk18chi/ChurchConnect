@@ -181,6 +181,13 @@ model ChurchProfile {
   worshipStyle     String?
   accessibility    String[]
 
+  // How to Give section
+  howToGive            String?  @db.Text
+  bankName             String?
+  bankAccountNumber    String?
+  bankAccountName      String?
+  externalDonationUrl  String?
+
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 

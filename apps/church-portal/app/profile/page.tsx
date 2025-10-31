@@ -16,6 +16,11 @@ const profileSchema = z.object({
   whatToExpect: z.string().optional(),
   dressCode: z.string().optional(),
   worshipStyle: z.string().optional(),
+  howToGive: z.string().optional(),
+  bankName: z.string().optional(),
+  bankAccountNumber: z.string().optional(),
+  bankAccountName: z.string().optional(),
+  externalDonationUrl: z.string().url().optional().or(z.literal("")),
 });
 
 type ProfileFormData = z.infer<typeof profileSchema>;
@@ -36,6 +41,11 @@ export default function ProfilePage() {
       whatToExpect: "",
       dressCode: "",
       worshipStyle: "",
+      howToGive: "",
+      bankName: "",
+      bankAccountNumber: "",
+      bankAccountName: "",
+      externalDonationUrl: "",
     },
   });
 
@@ -125,6 +135,70 @@ export default function ProfilePage() {
             error={errors.worshipStyle}
             placeholder="e.g., Contemporary, Traditional, Blended"
           />
+
+          <div className="border-t pt-6">
+            <h2 className="mb-4 text-xl font-semibold text-gray-900">
+              How to Give
+            </h2>
+            <p className="mb-4 text-sm text-gray-600">
+              Provide information about how people can support your church
+              financially.
+            </p>
+
+            <div className="space-y-4">
+              <FormTextarea
+                label="Giving Instructions"
+                name="howToGive"
+                register={register}
+                error={errors.howToGive}
+                placeholder="Explain how people can give to your church..."
+                rows={4}
+              />
+
+              <div className="space-y-4 rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Bank Transfer Information (Optional)
+                </h3>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                  <FormInput
+                    label="Bank Name"
+                    name="bankName"
+                    register={register}
+                    error={errors.bankName}
+                    placeholder="e.g., Mizuho Bank"
+                  />
+                  <FormInput
+                    label="Account Name"
+                    name="bankAccountName"
+                    register={register}
+                    error={errors.bankAccountName}
+                    placeholder="Account holder name"
+                  />
+                </div>
+
+                <FormInput
+                  label="Account Number"
+                  name="bankAccountNumber"
+                  register={register}
+                  error={errors.bankAccountNumber}
+                  placeholder="1234567"
+                />
+              </div>
+
+              <FormInput
+                label="External Donation Link (Optional)"
+                name="externalDonationUrl"
+                register={register}
+                error={errors.externalDonationUrl}
+                placeholder="https://..."
+                type="url"
+              />
+              <p className="text-xs text-gray-500">
+                Link to external donation platform (e.g., PayPal, Stripe)
+              </p>
+            </div>
+          </div>
 
           <div className="flex justify-end gap-4">
             <button

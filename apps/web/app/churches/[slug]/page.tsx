@@ -46,6 +46,11 @@ const GET_CHURCH = gql`
         dressCode
         worshipStyle
         accessibility
+        howToGive
+        bankName
+        bankAccountNumber
+        bankAccountName
+        externalDonationUrl
       }
       social {
         youtubeUrl

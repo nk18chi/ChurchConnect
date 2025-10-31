@@ -21,6 +21,11 @@ interface ChurchTabsProps {
       dressCode?: string | null;
       worshipStyle?: string | null;
       accessibility?: string[];
+      howToGive?: string | null;
+      bankName?: string | null;
+      bankAccountNumber?: string | null;
+      bankAccountName?: string | null;
+      externalDonationUrl?: string | null;
     } | null;
     staff?: Array<{
       id: string;
@@ -97,6 +102,7 @@ export function ChurchTabs({ church }: ChurchTabsProps) {
           <TabsTrigger value="worship">Worship</TabsTrigger>
           <TabsTrigger value="events">Events</TabsTrigger>
           <TabsTrigger value="sermons">Sermons</TabsTrigger>
+          <TabsTrigger value="give">Give</TabsTrigger>
           <TabsTrigger value="connect">Connect</TabsTrigger>
         </TabsList>
 
@@ -149,6 +155,19 @@ export function ChurchTabs({ church }: ChurchTabsProps) {
                 <CardContent>
                   <p className="whitespace-pre-line text-gray-600">
                     {church.profile.storyOfChurch}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {church.profile?.kidChurchInfo && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Kids Ministry</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-line text-gray-600">
+                    {church.profile.kidChurchInfo}
                   </p>
                 </CardContent>
               </Card>
@@ -378,6 +397,91 @@ export function ChurchTabs({ church }: ChurchTabsProps) {
                 </CardContent>
               </Card>
             )}
+          </TabsContent>
+
+          <TabsContent value="give" className="space-y-6">
+            {church.profile?.howToGive && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>How to Give</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="whitespace-pre-line text-gray-600">
+                    {church.profile.howToGive}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {(church.profile?.bankName ||
+              church.profile?.bankAccountNumber ||
+              church.profile?.bankAccountName) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Bank Transfer Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  {church.profile.bankName && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">
+                        Bank Name
+                      </p>
+                      <p className="text-gray-900">{church.profile.bankName}</p>
+                    </div>
+                  )}
+                  {church.profile.bankAccountName && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">
+                        Account Name
+                      </p>
+                      <p className="text-gray-900">
+                        {church.profile.bankAccountName}
+                      </p>
+                    </div>
+                  )}
+                  {church.profile.bankAccountNumber && (
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">
+                        Account Number
+                      </p>
+                      <p className="text-gray-900">
+                        {church.profile.bankAccountNumber}
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {church.profile?.externalDonationUrl && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Give Online</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <a
+                    href={church.profile.externalDonationUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-white hover:bg-primary/90"
+                  >
+                    Give Online
+                  </a>
+                </CardContent>
+              </Card>
+            )}
+
+            {!church.profile?.howToGive &&
+              !church.profile?.bankName &&
+              !church.profile?.bankAccountNumber &&
+              !church.profile?.bankAccountName &&
+              !church.profile?.externalDonationUrl && (
+                <Card>
+                  <CardContent className="py-12 text-center text-gray-600">
+                    No giving information available yet.
+                  </CardContent>
+                </Card>
+              )}
           </TabsContent>
 
           <TabsContent value="connect" className="space-y-6">
