@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { prisma } from '@repo/database'
+import { sendDonationReceipt } from '@repo/email'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2024-11-20.acacia',
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
 
 // Handle one-time payment completion
 async function handleOneTimePayment(session: Stripe.Checkout.Session) {
-  const { metadata, amount_total, customer, payment_intent } = session
+  const { metadata, amount_total, customer, payment_intent, customer_details } = session
 
   if (!amount_total || !payment_intent) {
     console.error('Missing required session data for one-time payment')
@@ -112,7 +113,7 @@ async function handleOneTimePayment(session: Stripe.Checkout.Session) {
 
   // Update or create the donation record
   try {
-    await prisma.platformDonation.create({
+    const donation = await prisma.platformDonation.create({
       data: {
         donorId: userId,
         churchId: churchId,
@@ -125,6 +126,31 @@ async function handleOneTimePayment(session: Stripe.Checkout.Session) {
     })
 
     console.log(`One-time donation recorded: ${payment_intent}`)
+
+    // Send email receipt
+    if (customer_details?.email) {
+      try {
+        await sendDonationReceipt({
+          to: customer_details.email,
+          donorName: customer_details.name || 'Supporter',
+          amount: amount_total,
+          currency: 'JPY',
+          type: 'ONE_TIME',
+          date: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          receiptNumber: `CC-${donation.id.slice(-8).toUpperCase()}`,
+          paymentMethod: session.payment_method_types?.[0]
+        })
+
+        console.log(`One-time donation receipt sent to: ${customer_details.email}`)
+      } catch (emailError) {
+        // Log error but don't fail the webhook
+        console.error('Error sending donation receipt email:', emailError)
+      }
+    }
   } catch (error) {
     console.error('Error recording one-time donation:', error)
   }
@@ -144,7 +170,7 @@ async function handleOneTimePayment(session: Stripe.Checkout.Session) {
 
 // Handle subscription creation
 async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
-  const { metadata, customer, subscription: subscriptionId } = session
+  const { metadata, customer, subscription: subscriptionId, customer_details } = session
 
   if (!subscriptionId || typeof subscriptionId !== 'string') {
     console.error('Missing subscription ID')
@@ -160,7 +186,7 @@ async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
 
   // Create subscription record
   try {
-    await prisma.platformDonationSubscription.create({
+    const subscriptionRecord = await prisma.platformDonationSubscription.create({
       data: {
         donorId: userId,
         stripeSubscriptionId: subscriptionId,
@@ -173,6 +199,31 @@ async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
     })
 
     console.log(`Subscription created: ${subscriptionId}`)
+
+    // Send subscription confirmation email
+    if (customer_details?.email) {
+      try {
+        await sendDonationReceipt({
+          to: customer_details.email,
+          donorName: customer_details.name || 'Supporter',
+          amount: amount,
+          currency: 'JPY',
+          type: 'MONTHLY',
+          date: new Date().toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          receiptNumber: `CC-SUB-${subscriptionRecord.id.slice(-8).toUpperCase()}`,
+          paymentMethod: session.payment_method_types?.[0]
+        })
+
+        console.log(`Subscription confirmation sent to: ${customer_details.email}`)
+      } catch (emailError) {
+        // Log error but don't fail the webhook
+        console.error('Error sending subscription confirmation email:', emailError)
+      }
+    }
   } catch (error) {
     console.error('Error creating subscription record:', error)
   }
@@ -192,7 +243,7 @@ async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
 
 // Handle recurring subscription payment
 async function handleRecurringPayment(invoice: Stripe.Invoice) {
-  const { subscription: subscriptionId, amount_paid, payment_intent, customer } = invoice
+  const { subscription: subscriptionId, amount_paid, payment_intent, customer, customer_email, customer_name, created, number } = invoice
 
   if (!subscriptionId || typeof subscriptionId !== 'string' || !payment_intent) {
     console.error('Missing required invoice data')
@@ -211,7 +262,7 @@ async function handleRecurringPayment(invoice: Stripe.Invoice) {
 
   // Create donation record for this payment
   try {
-    await prisma.platformDonation.create({
+    const donation = await prisma.platformDonation.create({
       data: {
         donorId: subscription.donorId,
         churchId: null, // Subscriptions don't have churchId in this implementation
@@ -225,6 +276,30 @@ async function handleRecurringPayment(invoice: Stripe.Invoice) {
     })
 
     console.log(`Recurring payment recorded: ${payment_intent}`)
+
+    // Send monthly receipt email
+    if (customer_email) {
+      try {
+        await sendDonationReceipt({
+          to: customer_email,
+          donorName: customer_name || 'Supporter',
+          amount: amount_paid,
+          currency: 'JPY',
+          type: 'MONTHLY',
+          date: new Date(created * 1000).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }),
+          receiptNumber: number || `CC-${donation.id.slice(-8).toUpperCase()}`,
+        })
+
+        console.log(`Monthly donation receipt sent to: ${customer_email}`)
+      } catch (emailError) {
+        // Log error but don't fail the webhook
+        console.error('Error sending monthly donation receipt email:', emailError)
+      }
+    }
   } catch (error) {
     console.error('Error recording recurring payment:', error)
   }
@@ -255,7 +330,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 // Handle subscription cancellation
 async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
   try {
-    await prisma.platformDonationSubscription.update({
+    const subscriptionRecord = await prisma.platformDonationSubscription.update({
       where: { stripeSubscriptionId: subscription.id },
       data: {
         status: 'CANCELED',
@@ -264,6 +339,24 @@ async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
     })
 
     console.log(`Subscription canceled: ${subscription.id}`)
+
+    // TODO: Send cancellation confirmation email
+    // This requires creating a subscription cancellation email template
+    // For now, we log the cancellation. Future implementation should:
+    // 1. Retrieve customer email from Stripe
+    // 2. Create a subscription cancellation email template
+    // 3. Send confirmation with cancellation details and final billing date
+
+    // Example future implementation:
+    // if (customer_email) {
+    //   await sendSubscriptionCancellationEmail({
+    //     to: customer_email,
+    //     donorName: customer_name,
+    //     amount: subscriptionRecord.amount,
+    //     finalBillingDate: new Date(subscription.current_period_end * 1000)
+    //   })
+    // }
+
   } catch (error) {
     console.error('Error canceling subscription:', error)
   }
