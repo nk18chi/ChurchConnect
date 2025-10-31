@@ -5,6 +5,12 @@ import { prisma } from '@repo/database'
 
 export const builder = new SchemaBuilder<{
   PrismaTypes: PrismaTypes
+  Scalars: {
+    DateTime: {
+      Input: Date
+      Output: Date
+    }
+  }
   Context: {
     prisma: typeof prisma
     userId?: string
