@@ -1,5 +1,5 @@
 import { prisma } from '@repo/database'
-import { auth } from '@repo/auth'
+import type { Request, Response } from 'express'
 
 export interface Context {
   prisma: typeof prisma
@@ -7,13 +7,14 @@ export interface Context {
   userRole?: string
 }
 
-export async function createContext({ req }: { req: Request }): Promise<Context> {
-  // Extract session from NextAuth
-  const session = await auth()
+export async function createContext({ req, res }: { req: Request; res: Response }): Promise<Context> {
+  // TODO: Extract session from request headers/cookies
+  // For now, return context without authentication
+  // This will need to be implemented based on your auth strategy
 
   return {
     prisma,
-    userId: session?.user?.id,
-    userRole: session?.user?.role,
+    userId: undefined,
+    userRole: undefined,
   }
 }
