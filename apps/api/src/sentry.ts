@@ -1,10 +1,12 @@
 import * as Sentry from '@sentry/node'
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
 
+let sentryInitialized = false
+
 export function initSentry() {
   if (!process.env.SENTRY_DSN) {
     console.warn('Sentry DSN not configured - error tracking disabled')
-    return
+    return false
   }
 
   Sentry.init({
@@ -62,6 +64,13 @@ export function initSentry() {
       'GraphQLError',
     ],
   })
+
+  sentryInitialized = true
+  return true
+}
+
+export function isSentryInitialized() {
+  return sentryInitialized
 }
 
 export { Sentry }

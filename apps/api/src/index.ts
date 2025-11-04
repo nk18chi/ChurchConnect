@@ -6,10 +6,10 @@ import express from 'express'
 import http from 'http'
 import { schema } from '@repo/graphql'
 import { createContext } from './context'
-import { initSentry, Sentry } from './sentry'
+import { initSentry, isSentryInitialized, Sentry } from './sentry'
 
 // Initialize Sentry
-initSentry()
+const sentryEnabled = initSentry()
 
 const PORT = process.env.PORT || 4000
 
@@ -53,8 +53,10 @@ async function startServer() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() })
   })
 
-  // Sentry error handler (must be before any other error middleware)
-  app.use(Sentry.Handlers.errorHandler())
+  // Sentry error handler (only if Sentry is initialized)
+  if (sentryEnabled) {
+    app.use(Sentry.Handlers.errorHandler())
+  }
 
   // Start the server
   await new Promise<void>((resolve) => httpServer.listen({ port: PORT }, resolve))
