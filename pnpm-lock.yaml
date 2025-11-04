@@ -7,6 +7,10 @@ settings:
 importers:
 
   .:
+    dependencies:
+      neverthrow:
+        specifier: ^8.2.0
+        version: 8.2.0
     devDependencies:
       '@turbo/gen':
         specifier: ^1.13.0
@@ -411,6 +415,19 @@ importers:
       tsx:
         specifier: ^4.7.2
         version: 4.20.6
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
+
+  packages/domain:
+    dependencies:
+      neverthrow:
+        specifier: ^8.2.0
+        version: 8.2.0
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
       typescript:
         specifier: ^5.4.5
         version: 5.9.3
@@ -7387,6 +7404,13 @@ packages:
     resolution: {integrity: sha512-dBpDMdxv9Irdq66304OLfEmQ9tbNRFnFTuZiLo+bD+r332bBmMJ8GBLXklIXXgxd3+v9+KUnZaUR5PJMa75Gsg==}
     engines: {node: '>= 0.4.0'}
     dev: true
+
+  /neverthrow@8.2.0:
+    resolution: {integrity: sha512-kOCT/1MCPAxY5iUV3wytNFUMUolzuwd/VF/1KCx7kf6CutrOsTie+84zTGTpgQycjvfLdBBdvBvFLqFD2c0wkQ==}
+    engines: {node: '>=18'}
+    optionalDependencies:
+      '@rollup/rollup-linux-x64-gnu': 4.52.5
+    dev: false
 
   /next-auth@5.0.0-beta.22(next@14.2.3)(react@18.3.1):
     resolution: {integrity: sha512-QGBo9HGOjmnJBHGXvtFztl0tM5tL0porDlk74HVoCCzXd986ApOlIW3EmiCuho7YzEopgkFiwwmcXpoCrHAtYw==}
