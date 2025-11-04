@@ -2,7 +2,6 @@
 
 import * as Sentry from '@sentry/nextjs'
 import { useEffect } from 'react'
-import { Button } from '@repo/ui/components/button'
 
 export default function Error({
   error,
@@ -30,17 +29,19 @@ export default function Error({
         </div>
 
         <div className="space-y-3">
-          <Button onClick={() => reset()} className="w-full">
+          <button
+            onClick={() => reset()}
+            className="w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 transition-colors"
+          >
             Try Again
-          </Button>
+          </button>
 
-          <Button
+          <button
             onClick={() => (window.location.href = '/dashboard')}
-            variant="outline"
-            className="w-full"
+            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Go to Dashboard
-          </Button>
+          </button>
         </div>
 
         <p className="mt-6 text-sm text-gray-500">
