@@ -2,7 +2,6 @@
 
 import React from 'react'
 import * as Sentry from '@sentry/nextjs'
-import { Button } from '@repo/ui/components/button'
 
 interface ErrorBoundaryProps {
   children: React.ReactNode
@@ -52,26 +51,25 @@ export class ErrorBoundary extends React.Component<
             </div>
 
             <div className="space-y-3">
-              <Button
+              <button
                 onClick={() => {
                   this.setState({ hasError: false })
                   window.location.reload()
                 }}
-                className="w-full"
+                className="w-full rounded-lg bg-red-600 px-4 py-2 font-semibold text-white hover:bg-red-700 transition-colors"
               >
                 Reload Page
-              </Button>
+              </button>
 
-              <Button
+              <button
                 onClick={() => {
                   this.setState({ hasError: false })
                   window.location.href = '/'
                 }}
-                variant="outline"
-                className="w-full"
+                className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2 font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
               >
                 Go to Homepage
-              </Button>
+              </button>
             </div>
 
             <p className="mt-6 text-sm text-gray-500">
