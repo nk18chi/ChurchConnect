@@ -1,5 +1,5 @@
 import { builder } from '../builder'
-import { createChurch, publishChurch, verifyChurch, ChurchId } from '@repo/domain'
+import { createChurch, publishChurch, verifyChurch, ChurchId, isDraft } from '@repo/domain'
 import { getRepositoryFactory } from '../factories/repositoryFactory'
 import { mapDomainError } from '../utils/errorMapper'
 
@@ -221,10 +221,6 @@ builder.mutationFields((t) => ({
       id: t.arg.string({ required: true }),
     },
     resolve: async (query, _root, args, ctx) => {
-      const { publishChurch, ChurchId, isDraft } = await import('@repo/domain')
-      const { getRepositoryFactory } = await import('../factories/repositoryFactory')
-      const { mapDomainError } = await import('../utils/errorMapper')
-
       // 1. Authentication & authorization check
       if (!ctx.userId) {
         throw new Error('Not authenticated')
