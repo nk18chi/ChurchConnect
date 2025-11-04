@@ -214,4 +214,69 @@ builder.mutationFields((t) => ({
       })
     },
   }),
+
+  publishChurch: t.prismaField({
+    type: 'Church',
+    args: {
+      id: t.arg.string({ required: true }),
+    },
+    resolve: async (query, _root, args, ctx) => {
+      const { publishChurch, ChurchId, isDraft } = await import('@repo/domain')
+      const { getRepositoryFactory } = await import('../factories/repositoryFactory')
+      const { mapDomainError } = await import('../utils/errorMapper')
+
+      // 1. Authentication & authorization check
+      if (!ctx.userId) {
+        throw new Error('Not authenticated')
+      }
+
+      // For MVP, any authenticated user can publish their church
+      // In production, check if user is church admin
+      // if (ctx.session.user.role !== 'CHURCH_ADMIN') {
+      //   throw new Error('Only church admins can publish churches')
+      // }
+
+      // 2. Validate and create ChurchId value object
+      const churchIdResult = ChurchId.create(args.id)
+      if (churchIdResult.isErr()) {
+        throw mapDomainError(churchIdResult.error)
+      }
+
+      // 3. Load church from repository
+      const factory = getRepositoryFactory(ctx.prisma)
+      const churchRepo = factory.createChurchRepository()
+
+      const churchResult = await churchRepo.findById(churchIdResult.value)
+      if (churchResult.isErr()) {
+        throw mapDomainError(churchResult.error)
+      }
+
+      if (!churchResult.value) {
+        throw new Error('Church not found')
+      }
+
+      // 4. Check church is in Draft state
+      if (!isDraft(churchResult.value)) {
+        throw new Error('Church is already published')
+      }
+
+      // 5. Execute domain workflow
+      const publishedResult = publishChurch(churchResult.value)
+      if (publishedResult.isErr()) {
+        throw mapDomainError(publishedResult.error)
+      }
+
+      // 6. Persist changes
+      const savedResult = await churchRepo.save(publishedResult.value)
+      if (savedResult.isErr()) {
+        throw mapDomainError(savedResult.error)
+      }
+
+      // 7. Return full Prisma Church
+      return ctx.prisma.church.findUniqueOrThrow({
+        ...query,
+        where: { id: savedResult.value.id.toString() },
+      })
+    },
+  }),
 }))
