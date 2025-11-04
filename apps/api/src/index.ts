@@ -3,6 +3,7 @@ import { expressMiddleware } from '@apollo/server/express4'
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer'
 import cors from 'cors'
 import express from 'express'
+import cookieParser from 'cookie-parser'
 import http from 'http'
 import { schema } from '@repo/graphql'
 import { createContext } from './context'
@@ -42,6 +43,7 @@ async function startServer() {
   app.use(
     '/graphql',
     cors<cors.CorsRequest>(corsOptions),
+    cookieParser(),
     express.json(),
     expressMiddleware(server, {
       context: createContext,
