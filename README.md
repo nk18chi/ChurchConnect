@@ -95,9 +95,9 @@ churchconnect/
 
 - Node.js 20+
 - pnpm 8.15.0+
-- PostgreSQL 14+
+- Docker Desktop (for local PostgreSQL database)
 
-### Installation (< 30 minutes)
+### Installation (< 10 minutes)
 
 1. **Clone the repository**
    ```bash
@@ -111,41 +111,49 @@ churchconnect/
    ```
 
 3. **Set up environment variables**
+
+   Copy the example environment files:
    ```bash
-   cp .env.example .env
+   # API environment
+   cp apps/api/.env.example apps/api/.env
+
+   # Database already has .env configured
+   # Other apps use .env.local (already set up)
    ```
 
-   Edit `.env` with your configuration. See [Environment Setup Guide](docs/ENVIRONMENT_SETUP.md) for details.
-
-   **Quick setup for local development:**
-   ```env
-   DATABASE_URL="postgresql://postgres:password@localhost:5432/churchconnect"
-   NEXTAUTH_SECRET="$(openssl rand -base64 32)"
-   NEXTAUTH_URL="http://localhost:3000"
-   NEXT_PUBLIC_WEB_URL="http://localhost:3000"
-   NEXT_PUBLIC_API_URL="http://localhost:3001"
-   NEXT_PUBLIC_PORTAL_URL="http://localhost:3002"
-   NEXT_PUBLIC_ADMIN_URL="http://localhost:3003"
-   ```
-
-4. **Set up database**
+   The default `.env` files are pre-configured for local development. You only need to add:
    ```bash
-   cd packages/database
-   npx prisma migrate deploy
-   npx prisma db seed
-   cd ../..
+   # Generate a secret for NextAuth
+   echo "NEXTAUTH_SECRET=$(openssl rand -base64 32)" >> apps/web/.env.local
+   echo "NEXTAUTH_SECRET=$(openssl rand -base64 32)" >> apps/church-portal/.env.local
+   echo "NEXTAUTH_SECRET=$(openssl rand -base64 32)" >> apps/admin/.env.local
+   echo "NEXTAUTH_SECRET=$(openssl rand -base64 32)" >> apps/api/.env
    ```
 
-5. **Start development servers**
+4. **Start everything (database + all apps)**
    ```bash
    pnpm dev
    ```
 
+   This single command will:
+   - Start PostgreSQL database (via Docker)
+   - Wait for database to be ready
+   - Push Prisma schema to database
+   - Seed reference data
+   - Start all 4 applications
+
 **Apps will be available at:**
 - Web: http://localhost:3000
-- Church Portal: http://localhost:3002
-- Admin: http://localhost:3003
-- GraphQL API: http://localhost:3001/graphql
+- API: http://localhost:4000/graphql (Apollo Studio)
+- Church Portal: http://localhost:3001
+- Admin: http://localhost:3002
+
+**First time setup:**
+After running `pnpm dev`, run the database migrations and seed:
+```bash
+pnpm db:push
+pnpm db:seed
+```
 
 ## Documentation
 
@@ -177,18 +185,26 @@ churchconnect/
 
 ```bash
 # Development
-pnpm dev          # Start all apps in dev mode
+pnpm dev          # Start database + all apps (recommended)
+pnpm dev:no-db    # Start apps only (database already running)
 pnpm build        # Build all apps for production
 pnpm lint         # Lint all packages
 pnpm type-check   # Run TypeScript type checking
 pnpm clean        # Clean build artifacts
 pnpm format       # Format code with Prettier
 
-# Database (run from packages/database)
+# Database Management
+pnpm db:start     # Start PostgreSQL database (Docker)
+pnpm db:stop      # Stop PostgreSQL database
+pnpm db:restart   # Restart PostgreSQL database
+pnpm db:reset     # Reset database (delete data + recreate + seed)
+pnpm db:push      # Push Prisma schema to database (dev)
+pnpm db:seed      # Seed reference data (prefectures, cities, etc.)
+
+# Database Operations (from packages/database)
+cd packages/database
 pnpm db:generate  # Generate Prisma Client
-pnpm db:push      # Push schema to database (dev)
-pnpm db:migrate   # Run migrations (prod)
-pnpm db:seed      # Seed reference data
+pnpm db:migrate   # Create new migration (prod)
 pnpm db:studio    # Open Prisma Studio
 
 # Deployment
