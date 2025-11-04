@@ -1,3 +1,5 @@
-// Domain package entry point
-// This package will contain pure domain logic with no infrastructure dependencies
-export {}
+// Shared domain primitives
+export * from './shared'
+
+// Church domain
+export * from './church'
