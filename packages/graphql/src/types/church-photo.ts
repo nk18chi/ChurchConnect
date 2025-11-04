@@ -32,8 +32,28 @@ const UpdateChurchPhotoInput = builder.inputType('UpdateChurchPhotoInput', {
   }),
 })
 
-// Query to get church photos with authentication
+// Queries
 builder.queryFields((t) => ({
+  // Public query for church photos
+  churchPhotos: t.prismaField({
+    type: ['ChurchPhoto'],
+    args: {
+      churchId: t.arg.string({ required: true }),
+      category: t.arg.string({ required: false }),
+    },
+    resolve: async (query, _root, args, ctx) => {
+      return ctx.prisma.churchPhoto.findMany({
+        ...query,
+        where: {
+          churchId: args.churchId,
+          ...(args.category && { category: args.category }),
+        },
+        orderBy: { order: 'asc' },
+      })
+    },
+  }),
+
+  // Authenticated query for church admin to manage their photos
   myChurchPhotos: t.prismaField({
     type: ['ChurchPhoto'],
     args: {
@@ -41,13 +61,13 @@ builder.queryFields((t) => ({
     },
     resolve: async (query, _root, args, ctx) => {
       // Check authentication
-      if (!ctx.user?.id) {
+      if (!ctx.userId) {
         throw new Error('Not authenticated')
       }
 
       // Get church for this admin
       const church = await ctx.prisma.church.findUnique({
-        where: { adminUserId: ctx.user.id },
+        where: { adminUserId: ctx.userId },
         select: { id: true },
       })
 
@@ -76,13 +96,13 @@ builder.mutationFields((t) => ({
     },
     resolve: async (query, _root, args, ctx) => {
       // Check authentication
-      if (!ctx.user?.id) {
+      if (!ctx.userId) {
         throw new Error('Not authenticated')
       }
 
       // Get church for this admin
       const church = await ctx.prisma.church.findUnique({
-        where: { adminUserId: ctx.user.id },
+        where: { adminUserId: ctx.userId },
         select: { id: true },
       })
 
@@ -112,7 +132,7 @@ builder.mutationFields((t) => ({
           caption: args.input.caption,
           category: args.input.category,
           order: nextOrder,
-          uploadedBy: ctx.user.id,
+          uploadedBy: ctx.userId,
         },
       })
     },
@@ -126,7 +146,7 @@ builder.mutationFields((t) => ({
     },
     resolve: async (query, _root, args, ctx) => {
       // Check authentication
-      if (!ctx.user?.id) {
+      if (!ctx.userId) {
         throw new Error('Not authenticated')
       }
 
@@ -136,19 +156,27 @@ builder.mutationFields((t) => ({
         include: { church: true },
       })
 
-      if (!photo || photo.church.adminUserId !== ctx.user.id) {
+      if (!photo || photo.church.adminUserId !== ctx.userId) {
         throw new Error('Photo not found or unauthorized')
+      }
+
+      // Prepare update data
+      const updateData: any = {}
+      if (args.input.caption !== undefined) {
+        updateData.caption = args.input.caption
+      }
+      if (args.input.category !== undefined) {
+        updateData.category = args.input.category
+      }
+      if (args.input.order !== undefined) {
+        updateData.order = args.input.order
       }
 
       // Update the photo
       return ctx.prisma.churchPhoto.update({
         ...query,
         where: { id: args.id },
-        data: {
-          ...(args.input.caption !== undefined && { caption: args.input.caption }),
-          ...(args.input.category !== undefined && { category: args.input.category }),
-          ...(args.input.order !== undefined && { order: args.input.order }),
-        },
+        data: updateData,
       })
     },
   }),
@@ -160,7 +188,7 @@ builder.mutationFields((t) => ({
     },
     resolve: async (_root, args, ctx) => {
       // Check authentication
-      if (!ctx.user?.id) {
+      if (!ctx.userId) {
         throw new Error('Not authenticated')
       }
 
@@ -170,7 +198,7 @@ builder.mutationFields((t) => ({
         include: { church: true },
       })
 
-      if (!photo || photo.church.adminUserId !== ctx.user.id) {
+      if (!photo || photo.church.adminUserId !== ctx.userId) {
         throw new Error('Photo not found or unauthorized')
       }
 

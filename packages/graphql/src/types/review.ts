@@ -51,6 +51,13 @@ const UpdateReviewStatusInput = builder.inputType('UpdateReviewStatusInput', {
   }),
 })
 
+const RespondToReviewInput = builder.inputType('RespondToReviewInput', {
+  fields: (t) => ({
+    reviewId: t.string({ required: true }),
+    content: t.string({ required: true }),
+  }),
+})
+
 // Queries
 builder.queryFields((t) => ({
   churchReviews: t.prismaField({
@@ -69,6 +76,20 @@ builder.queryFields((t) => ({
         },
         orderBy: { createdAt: 'desc' },
         take: args.limit ?? undefined,
+      })
+    },
+  }),
+
+  review: t.prismaField({
+    type: 'Review',
+    nullable: true,
+    args: {
+      id: t.arg.string({ required: true }),
+    },
+    resolve: async (query, _root, args, ctx) => {
+      return ctx.prisma.review.findUnique({
+        ...query,
+        where: { id: args.id },
       })
     },
   }),
@@ -217,6 +238,128 @@ builder.mutationFields((t) => ({
       }
 
       return updatedReview
+    },
+  }),
+
+  // Church admin responds to a review
+  respondToReview: t.prismaField({
+    type: 'ReviewResponse',
+    args: {
+      input: t.arg({ type: RespondToReviewInput, required: true }),
+    },
+    resolve: async (query, _root, args, ctx) => {
+      // Check authentication
+      if (!ctx.userId) {
+        throw new Error('Not authenticated')
+      }
+
+      // Check user is CHURCH_ADMIN
+      if (ctx.userRole !== 'CHURCH_ADMIN') {
+        throw new Error('Unauthorized: Church admin access required')
+      }
+
+      // Get church for this admin
+      const church = await ctx.prisma.church.findUnique({
+        where: { adminUserId: ctx.userId },
+        select: { id: true },
+      })
+
+      if (!church) {
+        throw new Error('No church found for this user')
+      }
+
+      // Verify review belongs to this church and is approved
+      const review = await ctx.prisma.review.findUnique({
+        where: { id: args.input.reviewId },
+        select: { churchId: true, status: true, response: true },
+      })
+
+      if (!review) {
+        throw new Error('Review not found')
+      }
+
+      if (review.churchId !== church.id) {
+        throw new Error('Review does not belong to your church')
+      }
+
+      if (review.status !== 'APPROVED') {
+        throw new Error('Can only respond to approved reviews')
+      }
+
+      if (review.response) {
+        throw new Error('Review already has a response. Use update instead.')
+      }
+
+      // Get user info for respondedBy field
+      const user = await ctx.prisma.user.findUnique({
+        where: { id: ctx.userId },
+        select: { name: true, email: true },
+      })
+
+      // Create the response
+      const response = await ctx.prisma.reviewResponse.create({
+        ...query,
+        data: {
+          reviewId: args.input.reviewId,
+          content: args.input.content,
+          respondedBy: user?.name || user?.email || 'Church Admin',
+        },
+      })
+
+      return response
+    },
+  }),
+
+  // Church admin deletes their response to a review
+  deleteReviewResponse: t.prismaField({
+    type: 'ReviewResponse',
+    args: {
+      reviewId: t.arg.string({ required: true }),
+    },
+    resolve: async (query, _root, args, ctx) => {
+      // Check authentication
+      if (!ctx.userId) {
+        throw new Error('Not authenticated')
+      }
+
+      // Check user is CHURCH_ADMIN
+      if (ctx.userRole !== 'CHURCH_ADMIN') {
+        throw new Error('Unauthorized: Church admin access required')
+      }
+
+      // Get church for this admin
+      const church = await ctx.prisma.church.findUnique({
+        where: { adminUserId: ctx.userId },
+        select: { id: true },
+      })
+
+      if (!church) {
+        throw new Error('No church found for this user')
+      }
+
+      // Verify review belongs to this church
+      const review = await ctx.prisma.review.findUnique({
+        where: { id: args.reviewId },
+        select: { churchId: true, response: { select: { id: true } } },
+      })
+
+      if (!review) {
+        throw new Error('Review not found')
+      }
+
+      if (review.churchId !== church.id) {
+        throw new Error('Review does not belong to your church')
+      }
+
+      if (!review.response) {
+        throw new Error('Review does not have a response')
+      }
+
+      // Delete the response
+      return ctx.prisma.reviewResponse.delete({
+        ...query,
+        where: { id: review.response.id },
+      })
     },
   }),
 }))
