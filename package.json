@@ -3,12 +3,20 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "turbo run dev",
+    "dev": "pnpm db:start && turbo run dev",
+    "dev:no-db": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "type-check": "turbo run type-check",
     "clean": "turbo run clean",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "db:start": "docker-compose up -d && pnpm db:wait",
+    "db:stop": "docker-compose down",
+    "db:restart": "docker-compose restart",
+    "db:reset": "docker-compose down -v && docker-compose up -d && pnpm db:wait && pnpm db:push && pnpm db:seed",
+    "db:wait": "node -e \"const{exec}=require('child_process');let i=0;const c=()=>{exec('docker exec churchconnect-postgres pg_isready -U user',(e)=>{if(!e){console.log('✅ Database ready');process.exit(0)}else if(++i<30){setTimeout(c,1000)}else{console.error('❌ Database failed to start');process.exit(1)}})}; c()\"",
+    "db:push": "pnpm --filter @repo/database db:push",
+    "db:seed": "pnpm --filter @repo/database db:seed"
   },
   "devDependencies": {
     "@turbo/gen": "^1.13.0",
