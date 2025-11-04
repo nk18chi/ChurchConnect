@@ -1,5 +1,5 @@
 import { builder } from '../builder'
-import { createChurch, publishChurch, verifyChurch, ChurchId, isDraft } from '@repo/domain'
+import { createChurch, publishChurch, verifyChurch, ChurchId, isDraft, isPublished } from '@repo/domain'
 import { getRepositoryFactory } from '../factories/repositoryFactory'
 import { mapDomainError } from '../utils/errorMapper'
 
@@ -264,6 +264,71 @@ builder.mutationFields((t) => ({
 
       // 6. Persist changes
       const savedResult = await churchRepo.save(publishedResult.value)
+      if (savedResult.isErr()) {
+        throw mapDomainError(savedResult.error)
+      }
+
+      // 7. Return full Prisma Church
+      return ctx.prisma.church.findUniqueOrThrow({
+        ...query,
+        where: { id: savedResult.value.id.toString() },
+      })
+    },
+  }),
+
+  verifyChurch: t.prismaField({
+    type: 'Church',
+    args: {
+      id: t.arg.string({ required: true }),
+    },
+    resolve: async (query, _root, args, ctx) => {
+      // 1. Authentication & authorization check
+      if (!ctx.userId) {
+        throw new Error('Not authenticated')
+      }
+
+      // Only ADMIN can verify churches
+      if (ctx.userRole !== 'ADMIN') {
+        throw new Error('Only admins can verify churches')
+      }
+
+      // 2. Validate and create ChurchId value object
+      const churchIdResult = ChurchId.create(args.id)
+      if (churchIdResult.isErr()) {
+        throw mapDomainError(churchIdResult.error)
+      }
+
+      // 3. Load church from repository
+      const factory = getRepositoryFactory(ctx.prisma)
+      const churchRepo = factory.createChurchRepository()
+
+      const churchResult = await churchRepo.findById(churchIdResult.value)
+      if (churchResult.isErr()) {
+        throw mapDomainError(churchResult.error)
+      }
+
+      if (!churchResult.value) {
+        throw new Error('Church not found')
+      }
+
+      // 4. Check church is in Published state (not Draft, not already Verified)
+      if (!isPublished(churchResult.value)) {
+        throw new Error('Church must be published before verification')
+      }
+
+      // 5. Execute domain workflow with authorization check
+      const verifiedResult = verifyChurch({
+        church: churchResult.value,
+        verifiedBy: ctx.userId,
+        verifierRole: ctx.userRole,
+      })
+
+      if (verifiedResult.isErr()) {
+        throw mapDomainError(verifiedResult.error)
+      }
+
+      // 6. Persist changes
+      const savedResult = await churchRepo.save(verifiedResult.value)
       if (savedResult.isErr()) {
         throw mapDomainError(savedResult.error)
       }
