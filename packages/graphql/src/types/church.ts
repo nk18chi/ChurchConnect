@@ -1,4 +1,7 @@
 import { builder } from '../builder'
+import { createChurch, publishChurch, verifyChurch, ChurchId } from '@repo/domain'
+import { getRepositoryFactory } from '../factories/repositoryFactory'
+import { mapDomainError } from '../utils/errorMapper'
 
 builder.prismaObject('Church', {
   fields: (t) => ({
@@ -152,6 +155,62 @@ builder.queryFields((t) => ({
       return ctx.prisma.church.findUnique({
         ...query,
         where: { id: args.id },
+      })
+    },
+  }),
+}))
+
+// ============================================
+// MUTATIONS
+// ============================================
+
+builder.mutationFields((t) => ({
+  createChurch: t.prismaField({
+    type: 'Church',
+    args: {
+      input: t.arg({
+        type: builder.inputType('CreateChurchInput', {
+          fields: (t) => ({
+            name: t.string({ required: true }),
+          }),
+        }),
+        required: true,
+      }),
+    },
+    resolve: async (query, _root, args, ctx) => {
+      // 1. Authentication check
+      if (!ctx.userId) {
+        throw new Error('Not authenticated')
+      }
+
+      // 2. Execute domain workflow (pure business logic)
+      const churchResult = createChurch({
+        name: args.input.name,
+        adminUserId: ctx.userId,
+      })
+
+      // 3. Handle domain errors
+      if (churchResult.isErr()) {
+        throw mapDomainError(churchResult.error)
+      }
+
+      // 4. Persist via repository
+      const factory = getRepositoryFactory(ctx.prisma)
+      const churchRepo = factory.createChurchRepository()
+
+      const savedResult = await churchRepo.save(churchResult.value)
+
+      // 5. Handle infrastructure errors
+      if (savedResult.isErr()) {
+        throw mapDomainError(savedResult.error)
+      }
+
+      // 6. Return Prisma Church (Pothos will handle GraphQL mapping)
+      // We need to fetch the full church from Prisma because ChurchState
+      // only contains state fields, not full Church data
+      return ctx.prisma.church.findUniqueOrThrow({
+        ...query,
+        where: { id: savedResult.value.id.toString() },
       })
     },
   }),
