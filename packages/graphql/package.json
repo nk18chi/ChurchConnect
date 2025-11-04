@@ -15,6 +15,7 @@
     "@repo/database": "workspace:*",
     "@repo/domain": "workspace:^",
     "@repo/email": "workspace:*",
+    "@repo/infrastructure": "workspace:^",
     "graphql": "^16.8.1"
   },
   "devDependencies": {
