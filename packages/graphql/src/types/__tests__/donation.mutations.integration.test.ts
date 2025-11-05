@@ -121,7 +121,8 @@ describe('Donation Mutations Integration', () => {
         where: { id: String(savedResult.value.id) },
       })
 
-      expect(dbDonation?.stripePaymentId).toBe('')
+      // When no stripePaymentIntentId provided, uses donation ID as fallback
+      expect(dbDonation?.stripePaymentId).toBe(`pending_${String(savedResult.value.id)}`)
       expect(dbDonation?.metadata).toBeNull()
     })
 

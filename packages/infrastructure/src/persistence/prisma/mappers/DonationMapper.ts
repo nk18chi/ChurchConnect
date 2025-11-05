@@ -166,7 +166,8 @@ export class DonationMapper {
     return {
       id: String(donation.id),
       donorId: donation.userId,
-      stripePaymentId: donation.stripePaymentIntentId ?? '',
+      // stripePaymentId must be unique - use donation ID as fallback if no payment intent
+      stripePaymentId: donation.stripePaymentIntentId ?? `pending_${String(donation.id)}`,
       amount: Number(donation.amount),
       currency: 'jpy',
       type: 'ONE_TIME', // MVP: all donations are one-time
