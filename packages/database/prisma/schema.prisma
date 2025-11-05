@@ -421,6 +421,9 @@ model PlatformDonation {
   type            DonationType
   status          DonationStatus
 
+  // State-specific metadata (completedAt, failedAt, failureReason, refundedAt, refundReason, stripeRefundId, custom metadata)
+  metadata        Json?
+
   subscriptionId  String?
   subscription    PlatformDonationSubscription? @relation(fields: [subscriptionId], references: [id])
 

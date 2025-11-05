@@ -31,3 +31,6 @@ export type { ModerateReviewInput } from './review/workflows/moderateReview'
 export { respondToReview } from './review/workflows/respondToReview'
 export type { RespondToReviewInput } from './review/workflows/respondToReview'
 export type { IReviewRepository } from './review/repositories/IReviewRepository'
+
+// Donation domain
+export * from './donation'
