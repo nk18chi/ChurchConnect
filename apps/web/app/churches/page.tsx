@@ -15,25 +15,32 @@ export default function ChurchesPage({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Find Churches</h1>
-        <p className="mt-2 text-gray-600">
-          Discover churches across Japan that match your preferences.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
-        <aside className="lg:col-span-1">
+    <div className="flex flex-col h-screen">
+      {/* Sticky Filter Bar */}
+      <div className="sticky top-16 z-40 bg-white border-b shadow-sm">
+        <div className="container mx-auto px-4 py-4">
           <Suspense fallback={<div>Loading filters...</div>}>
             <ChurchFilters />
           </Suspense>
-        </aside>
+        </div>
+      </div>
 
-        <div className="lg:col-span-3">
-          <Suspense fallback={<div>Loading churches...</div>}>
-            <ChurchList searchParams={searchParams} />
-          </Suspense>
+      {/* Split Screen Layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Side - Scrollable Church List */}
+        <div className="w-full lg:w-[55%] overflow-y-auto">
+          <div className="container mx-auto px-6 py-6">
+            <Suspense fallback={<div>Loading churches...</div>}>
+              <ChurchList searchParams={searchParams} />
+            </Suspense>
+          </div>
+        </div>
+
+        {/* Right Side - Fixed Map */}
+        <div className="hidden lg:block lg:w-[45%]">
+          <div className="sticky top-[72px] h-[calc(100vh-72px)] bg-gray-200 flex items-center justify-center">
+            <p className="text-gray-500">Map Coming Soon</p>
+          </div>
         </div>
       </div>
     </div>

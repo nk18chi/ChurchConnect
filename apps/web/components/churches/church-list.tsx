@@ -68,10 +68,10 @@ export async function ChurchList({ searchParams }: ChurchListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="text-sm text-gray-600">
-        Found {churches.length} {churches.length === 1 ? "church" : "churches"}
+      <div className="text-sm font-medium text-gray-700">
+        Over {churches.length} {churches.length === 1 ? "church" : "churches"}
       </div>
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {churches.map((church: any) => (
           <ChurchCard key={church.id} church={church} />
         ))}
