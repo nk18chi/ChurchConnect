@@ -26,7 +26,7 @@ declare module "@auth/core/jwt" {
   }
 }
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+const nextAuthConfig = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
@@ -79,7 +79,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
+      if (user?.id) {
         token.id = user.id
         token.role = user.role
       }
@@ -94,3 +94,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
 })
+
+// Export individual functions
+// Note: Type assertions needed due to NextAuth v5 beta type inference issues with monorepo setup
+export const handlers = nextAuthConfig.handlers as typeof nextAuthConfig.handlers
+export const auth = nextAuthConfig.auth as typeof nextAuthConfig.auth
+export const signIn = nextAuthConfig.signIn as typeof nextAuthConfig.signIn
+export const signOut = nextAuthConfig.signOut as typeof nextAuthConfig.signOut

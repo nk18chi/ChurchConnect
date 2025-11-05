@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@repo/auth'
+import { auth } from '@repo/auth'
 import { deleteImage } from '@repo/cloudinary'
 import { prisma } from '@repo/database'
 
 export async function POST(request: NextRequest) {
   try {
     // Check authentication
-    const session = await getServerSession(authOptions)
+    const session = await auth()
     if (!session || session.user.role !== 'CHURCH_ADMIN') {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

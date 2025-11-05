@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { FormInput } from "@/components/form-input";
 import { FormTextarea } from "@/components/form-textarea";
-import { Plus, Edit2, Trash2, Save, X } from "lucide-react";
+import { Plus, Edit2, Trash2, Save, X, Users } from "lucide-react";
 
 const staffSchema = z.object({
   name: z.string().min(1, "Name is required"),
