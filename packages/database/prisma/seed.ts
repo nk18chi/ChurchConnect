@@ -524,7 +524,696 @@ async function main() {
     })
   }
 
-  console.log(`✅ Created 3 sample churches`)
+  // Get additional reference data for new churches
+  const kyotoPrefecture = await prisma.prefecture.findUnique({ where: { name: 'Kyoto' } })
+  const fukuokaPrefecture = await prisma.prefecture.findUnique({ where: { name: 'Fukuoka' } })
+  const hokkaidoPrefecture = await prisma.prefecture.findUnique({ where: { name: 'Hokkaido' } })
+  const saitamaPrefecture = await prisma.prefecture.findUnique({ where: { name: 'Saitama' } })
+  const chibaPrefecture = await prisma.prefecture.findUnique({ where: { name: 'Chiba' } })
+  const hiroshimaPrefecture = await prisma.prefecture.findUnique({ where: { name: 'Hiroshima' } })
+  const nagoyaPrefecture = await prisma.prefecture.findUnique({ where: { name: 'Aichi' } })
+
+  const kyotoCity = await prisma.city.findFirst({ where: { name: 'Nakagyo', prefectureId: kyotoPrefecture?.id } })
+  const fukuokaCity = await prisma.city.findFirst({ where: { name: 'Fukuoka City', prefectureId: fukuokaPrefecture?.id } })
+  const shinjukuCity = await prisma.city.findFirst({ where: { name: 'Shinjuku', prefectureId: tokyoPrefecture?.id } })
+  const setagayaCity = await prisma.city.findFirst({ where: { name: 'Setagaya', prefectureId: tokyoPrefecture?.id } })
+  const minatoCity = await prisma.city.findFirst({ where: { name: 'Minato', prefectureId: tokyoPrefecture?.id } })
+  const kawasakiCity = await prisma.city.findFirst({ where: { name: 'Kawasaki', prefectureId: kanagawaPrefecture?.id } })
+  const osakaKitaCity = await prisma.city.findFirst({ where: { name: 'Kita', prefectureId: osakaPrefecture?.id } })
+
+  const catholic = await prisma.denomination.findUnique({ where: { name: 'Catholic' } })
+  const lutheran = await prisma.denomination.findUnique({ where: { name: 'Lutheran' } })
+  const methodist = await prisma.denomination.findUnique({ where: { name: 'Methodist' } })
+  const presbyterian = await prisma.denomination.findUnique({ where: { name: 'Presbyterian' } })
+  const nonDenom = await prisma.denomination.findUnique({ where: { name: 'Non-denominational' } })
+  const reformed = await prisma.denomination.findUnique({ where: { name: 'Reformed' } })
+
+  const chinese = await prisma.language.findUnique({ where: { code: 'zh' } })
+  const spanish = await prisma.language.findUnique({ where: { code: 'es' } })
+  const portuguese = await prisma.language.findUnique({ where: { code: 'pt' } })
+  const tagalog = await prisma.language.findUnique({ where: { code: 'tl' } })
+
+  // Create additional church admin users
+  const churchAdmin4 = await prisma.user.upsert({
+    where: { email: 'admin@kyotochurch.jp' },
+    update: {},
+    create: {
+      email: 'admin@kyotochurch.jp',
+      name: 'Kyoto Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  const churchAdmin5 = await prisma.user.upsert({
+    where: { email: 'admin@fukuokachurch.jp' },
+    update: {},
+    create: {
+      email: 'admin@fukuokachurch.jp',
+      name: 'Fukuoka Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  const churchAdmin6 = await prisma.user.upsert({
+    where: { email: 'admin@shinjukuchurch.jp' },
+    update: {},
+    create: {
+      email: 'admin@shinjukuchurch.jp',
+      name: 'Shinjuku Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  const churchAdmin7 = await prisma.user.upsert({
+    where: { email: 'admin@setagayachurch.jp' },
+    update: {},
+    create: {
+      email: 'admin@setagayachurch.jp',
+      name: 'Setagaya Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  const churchAdmin8 = await prisma.user.upsert({
+    where: { email: 'admin@minatochurch.jp' },
+    update: {},
+    create: {
+      email: 'admin@minatochurch.jp',
+      name: 'Minato Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  const churchAdmin9 = await prisma.user.upsert({
+    where: { email: 'admin@kawasakichurch.jp' },
+    update: {},
+    create: {
+      email: 'admin@kawasakichurch.jp',
+      name: 'Kawasaki Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  const churchAdmin10 = await prisma.user.upsert({
+    where: { email: 'admin@osakakitachurch.jp' },
+    update: {},
+    create: {
+      email: 'admin@osakakitachurch.jp',
+      name: 'Osaka Kita Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  const churchAdmin11 = await prisma.user.upsert({
+    where: { email: 'admin@yokohama2church.jp' },
+    update: {},
+    create: {
+      email: 'admin@yokohama2church.jp',
+      name: 'Yokohama 2 Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  const churchAdmin12 = await prisma.user.upsert({
+    where: { email: 'admin@tokyo2church.jp' },
+    update: {},
+    create: {
+      email: 'admin@tokyo2church.jp',
+      name: 'Tokyo 2 Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  const churchAdmin13 = await prisma.user.upsert({
+    where: { email: 'admin@osaka2church.jp' },
+    update: {},
+    create: {
+      email: 'admin@osaka2church.jp',
+      name: 'Osaka 2 Church Admin',
+      password: passwordHash,
+      role: UserRole.CHURCH_ADMIN,
+      emailVerified: new Date(),
+    },
+  })
+
+  // Church 4: Kyoto Catholic Church
+  if (kyotoPrefecture && kyotoCity && catholic) {
+    await prisma.church.create({
+      data: {
+        name: 'Kyoto Catholic Church',
+        slug: 'kyoto-catholic-church',
+        description: 'A historic Catholic church serving the Kyoto community',
+        denominationId: catholic.id,
+        prefectureId: kyotoPrefecture.id,
+        cityId: kyotoCity.id,
+        address: '5-10 Kawaramachi-dori, Nakagyo-ku',
+        postalCode: '604-8006',
+        phone: '075-123-4567',
+        email: 'info@kyotocatholic.jp',
+        heroImageUrl: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7',
+        isVerified: true,
+        isComplete: true,
+        isPublished: true,
+        adminUserId: churchAdmin4.id,
+        profile: {
+          create: {
+            whoWeAre: 'Kyoto Catholic Church has been serving the community for over 100 years.',
+            vision: 'To bring the love of Christ to Kyoto through service and worship.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: japanese.id },
+            { languageId: english.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '09:00',
+              endTime: '10:30',
+              languageId: japanese.id,
+              serviceType: 'Sunday Mass',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 156,
+            viewsThisWeek: 12,
+            viewsThisMonth: 45,
+          },
+        },
+      },
+    })
+  }
+
+  // Church 5: Fukuoka Community Church
+  if (fukuokaPrefecture && fukuokaCity && nonDenom) {
+    await prisma.church.create({
+      data: {
+        name: 'Fukuoka Community Church',
+        slug: 'fukuoka-community-church',
+        description: 'A diverse community church welcoming all',
+        denominationId: nonDenom.id,
+        prefectureId: fukuokaPrefecture.id,
+        cityId: fukuokaCity.id,
+        address: '3-15-20 Tenjin, Chuo-ku',
+        postalCode: '810-0001',
+        phone: '092-123-4567',
+        email: 'info@fukuokacommunity.jp',
+        heroImageUrl: 'https://images.unsplash.com/photo-1517840545241-b491010a8af4',
+        isVerified: true,
+        isComplete: true,
+        isPublished: true,
+        adminUserId: churchAdmin5.id,
+        profile: {
+          create: {
+            whoWeAre: 'A welcoming community of believers from diverse backgrounds.',
+            vision: 'To see Fukuoka transformed by the gospel of Jesus Christ.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: english.id },
+            { languageId: japanese.id },
+            { languageId: korean.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '10:30',
+              endTime: '12:00',
+              languageId: english.id,
+              serviceType: 'Sunday Service',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 98,
+            viewsThisWeek: 8,
+            viewsThisMonth: 32,
+          },
+        },
+      },
+    })
+  }
+
+  // Church 6: Shinjuku Lutheran Church
+  if (tokyoPrefecture && shinjukuCity && lutheran) {
+    await prisma.church.create({
+      data: {
+        name: 'Shinjuku Lutheran Church',
+        slug: 'shinjuku-lutheran-church',
+        description: 'A Lutheran congregation in the heart of Shinjuku',
+        denominationId: lutheran.id,
+        prefectureId: tokyoPrefecture.id,
+        cityId: shinjukuCity.id,
+        address: '2-8-10 Nishi-Shinjuku',
+        postalCode: '160-0023',
+        phone: '03-2345-6789',
+        email: 'info@shinjukulutheran.jp',
+        isVerified: false,
+        isComplete: true,
+        isPublished: true,
+        adminUserId: churchAdmin6.id,
+        profile: {
+          create: {
+            whoWeAre: 'A traditional Lutheran church serving the Shinjuku area.',
+            vision: 'Grace alone, faith alone, Scripture alone.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: japanese.id },
+            { languageId: english.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '10:00',
+              endTime: '11:15',
+              languageId: japanese.id,
+              serviceType: 'Sunday Service',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 72,
+            viewsThisWeek: 6,
+            viewsThisMonth: 28,
+          },
+        },
+      },
+    })
+  }
+
+  // Church 7: Setagaya Methodist Church
+  if (tokyoPrefecture && setagayaCity && methodist && chinese) {
+    await prisma.church.create({
+      data: {
+        name: 'Setagaya Methodist Church',
+        slug: 'setagaya-methodist-church',
+        description: 'A Methodist church with Chinese and Japanese services',
+        denominationId: methodist.id,
+        prefectureId: tokyoPrefecture.id,
+        cityId: setagayaCity.id,
+        address: '4-12-5 Setagaya',
+        postalCode: '154-0017',
+        phone: '03-3456-7890',
+        email: 'info@setagayamethodist.jp',
+        heroImageUrl: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4',
+        isVerified: true,
+        isComplete: false,
+        isPublished: true,
+        adminUserId: churchAdmin7.id,
+        profile: {
+          create: {
+            whoWeAre: 'A multicultural Methodist community serving Setagaya.',
+            vision: 'Open hearts, open minds, open doors.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: japanese.id },
+            { languageId: chinese.id },
+            { languageId: english.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '10:30',
+              endTime: '12:00',
+              languageId: japanese.id,
+              serviceType: 'Sunday Service',
+            },
+            {
+              dayOfWeek: 0,
+              startTime: '14:00',
+              endTime: '15:30',
+              languageId: chinese.id,
+              serviceType: 'Chinese Service',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 134,
+            viewsThisWeek: 11,
+            viewsThisMonth: 52,
+          },
+        },
+      },
+    })
+  }
+
+  // Church 8: Minato Presbyterian Church
+  if (tokyoPrefecture && minatoCity && presbyterian) {
+    await prisma.church.create({
+      data: {
+        name: 'Minato Presbyterian Church',
+        slug: 'minato-presbyterian-church',
+        description: 'A Presbyterian church in Minato ward',
+        denominationId: presbyterian.id,
+        prefectureId: tokyoPrefecture.id,
+        cityId: minatoCity.id,
+        address: '1-5-8 Roppongi, Minato-ku',
+        postalCode: '106-0032',
+        phone: '03-4567-8901',
+        email: 'info@minatopresbyterian.jp',
+        heroImageUrl: 'https://images.unsplash.com/photo-1507692049790-de58290a4334',
+        isVerified: false,
+        isComplete: true,
+        isPublished: true,
+        adminUserId: churchAdmin8.id,
+        profile: {
+          create: {
+            whoWeAre: 'A Reformed Presbyterian church in the heart of Tokyo.',
+            vision: 'Reformed and always reforming.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: english.id },
+            { languageId: japanese.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '11:00',
+              endTime: '12:30',
+              languageId: english.id,
+              serviceType: 'Sunday Service',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 187,
+            viewsThisWeek: 14,
+            viewsThisMonth: 63,
+          },
+        },
+      },
+    })
+  }
+
+  // Church 9: Kawasaki International Church
+  if (kanagawaPrefecture && kawasakiCity && evangelical && tagalog) {
+    await prisma.church.create({
+      data: {
+        name: 'Kawasaki International Church',
+        slug: 'kawasaki-international-church',
+        description: 'A diverse international church in Kawasaki',
+        denominationId: evangelical.id,
+        prefectureId: kanagawaPrefecture.id,
+        cityId: kawasakiCity.id,
+        address: '2-3-15 Kawasaki-ku',
+        postalCode: '210-0001',
+        phone: '044-123-4567',
+        email: 'info@kawasakiinternational.jp',
+        isVerified: true,
+        isComplete: false,
+        isPublished: true,
+        adminUserId: churchAdmin9.id,
+        profile: {
+          create: {
+            whoWeAre: 'An international church serving the Kawasaki community.',
+            vision: 'Many nations, one family in Christ.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: english.id },
+            { languageId: japanese.id },
+            { languageId: tagalog.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '10:00',
+              endTime: '11:30',
+              languageId: english.id,
+              serviceType: 'Sunday Service',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 115,
+            viewsThisWeek: 9,
+            viewsThisMonth: 41,
+          },
+        },
+      },
+    })
+  }
+
+  // Church 10: Osaka Kita Reformed Church
+  if (osakaPrefecture && osakaKitaCity && reformed) {
+    await prisma.church.create({
+      data: {
+        name: 'Osaka Kita Reformed Church',
+        slug: 'osaka-kita-reformed-church',
+        description: 'A Reformed church in Osaka Kita ward',
+        denominationId: reformed.id,
+        prefectureId: osakaPrefecture.id,
+        cityId: osakaKitaCity.id,
+        address: '3-8-12 Umeda, Kita-ku',
+        postalCode: '530-0001',
+        phone: '06-2345-6789',
+        email: 'info@osakakitareformed.jp',
+        heroImageUrl: 'https://images.unsplash.com/photo-1544864327-2660fa1d5c8b',
+        isVerified: false,
+        isComplete: true,
+        isPublished: true,
+        adminUserId: churchAdmin10.id,
+        profile: {
+          create: {
+            whoWeAre: 'A Reformed church committed to biblical teaching.',
+            vision: 'Soli Deo Gloria - Glory to God alone.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: japanese.id },
+            { languageId: english.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '10:30',
+              endTime: '12:00',
+              languageId: japanese.id,
+              serviceType: 'Sunday Service',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 91,
+            viewsThisWeek: 7,
+            viewsThisMonth: 35,
+          },
+        },
+      },
+    })
+  }
+
+  // Church 11: Yokohama Filipino Church
+  if (kanagawaPrefecture && yokohamaCity && nonDenom && tagalog) {
+    await prisma.church.create({
+      data: {
+        name: 'Yokohama Filipino Church',
+        slug: 'yokohama-filipino-church',
+        description: 'A Filipino community church in Yokohama',
+        denominationId: nonDenom.id,
+        prefectureId: kanagawaPrefecture.id,
+        cityId: yokohamaCity.id,
+        address: '5-12-3 Isezakicho, Naka-ku',
+        postalCode: '231-0045',
+        phone: '045-234-5678',
+        email: 'info@yokohamafilipino.jp',
+        heroImageUrl: 'https://images.unsplash.com/photo-1533854775446-95c4609da544',
+        isVerified: true,
+        isComplete: true,
+        isPublished: true,
+        adminUserId: churchAdmin11.id,
+        profile: {
+          create: {
+            whoWeAre: 'A vibrant Filipino Christian community in Yokohama.',
+            vision: 'To minister to the Filipino community in Japan with the love of Christ.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: tagalog.id },
+            { languageId: english.id },
+            { languageId: japanese.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '13:00',
+              endTime: '15:00',
+              languageId: tagalog.id,
+              serviceType: 'Sunday Service',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 203,
+            viewsThisWeek: 16,
+            viewsThisMonth: 71,
+          },
+        },
+      },
+    })
+  }
+
+  // Church 12: Tokyo Brazilian Church
+  if (tokyoPrefecture && tokyoCity && pentecostal && portuguese) {
+    await prisma.church.create({
+      data: {
+        name: 'Tokyo Brazilian Church',
+        slug: 'tokyo-brazilian-church',
+        description: 'A Portuguese-speaking Pentecostal church',
+        denominationId: pentecostal.id,
+        prefectureId: tokyoPrefecture.id,
+        cityId: tokyoCity.id,
+        address: '6-15-10 Shibuya',
+        postalCode: '150-0002',
+        phone: '03-5678-9012',
+        email: 'info@tokyobrazilian.jp',
+        isVerified: false,
+        isComplete: false,
+        isPublished: true,
+        adminUserId: churchAdmin12.id,
+        profile: {
+          create: {
+            whoWeAre: 'A Brazilian Pentecostal church serving the Portuguese-speaking community.',
+            vision: 'Bringing Brazilian believers together in worship and fellowship.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: portuguese.id },
+            { languageId: japanese.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '15:00',
+              endTime: '17:00',
+              languageId: portuguese.id,
+              serviceType: 'Sunday Service',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 67,
+            viewsThisWeek: 5,
+            viewsThisMonth: 22,
+          },
+        },
+      },
+    })
+  }
+
+  // Church 13: Osaka Spanish Church
+  if (osakaPrefecture && osakaCity && baptist && spanish) {
+    await prisma.church.create({
+      data: {
+        name: 'Osaka Spanish Church',
+        slug: 'osaka-spanish-church',
+        description: 'A Spanish-speaking Baptist church in Osaka',
+        denominationId: baptist.id,
+        prefectureId: osakaPrefecture.id,
+        cityId: osakaCity.id,
+        address: '2-5-18 Namba, Chuo-ku',
+        postalCode: '542-0076',
+        phone: '06-3456-7890',
+        email: 'info@osakaspanish.jp',
+        heroImageUrl: 'https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6',
+        isVerified: true,
+        isComplete: true,
+        isPublished: true,
+        adminUserId: churchAdmin13.id,
+        profile: {
+          create: {
+            whoWeAre: 'A Spanish-speaking Baptist community in Osaka.',
+            vision: 'To reach Spanish speakers in Japan with the gospel.',
+          },
+        },
+        languages: {
+          create: [
+            { languageId: spanish.id },
+            { languageId: japanese.id },
+            { languageId: english.id },
+          ],
+        },
+        serviceTimes: {
+          create: [
+            {
+              dayOfWeek: 0,
+              startTime: '14:00',
+              endTime: '16:00',
+              languageId: spanish.id,
+              serviceType: 'Sunday Service',
+            },
+          ],
+        },
+        analytics: {
+          create: {
+            totalViews: 142,
+            viewsThisWeek: 10,
+            viewsThisMonth: 48,
+          },
+        },
+      },
+    })
+  }
+
+  console.log(`✅ Created 13 sample churches`)
 
   // ============================================
   // SAMPLE REVIEWS
@@ -618,8 +1307,8 @@ async function main() {
   console.log(`   - ${denominations.length} denominations`)
   console.log(`   - ${prefectures.length} prefectures`)
   console.log(`   - ${cityCount} cities`)
-  console.log(`   - 7 users (1 admin, 3 church admins, 3 regular users)`)
-  console.log(`   - 3 sample churches (with profiles, staff, events, sermons)`)
+  console.log(`   - 17 users (1 admin, 13 church admins, 3 regular users)`)
+  console.log(`   - 13 sample churches (with profiles, staff, events, sermons)`)
   console.log(`   - 3 reviews`)
   console.log(`   - 2 donations`)
   console.log('')
