@@ -20,8 +20,8 @@ describe('publishChurch workflow', () => {
       const published = result.value
       expect(isPublished(published)).toBe(true)
       expect(published.slug).toBe('tokyo-baptist-church')
-      expect(published.name.equals(draftResult.value.name)).toBe(true)
-      expect(published.id.equals(draftResult.value.id)).toBe(true)
+      expect(published.name).toBe(draftResult.value.name)
+      expect(published.id).toBe(draftResult.value.id)
       expect(published.publishedAt).toBeInstanceOf(Date)
     }
   })

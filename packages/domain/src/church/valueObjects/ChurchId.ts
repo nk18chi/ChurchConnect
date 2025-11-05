@@ -1,28 +1,23 @@
 import { randomUUID } from 'crypto'
+import { z } from 'zod'
 import { Result, ok, err } from '../../shared/types/Result'
-import { ValueObject } from '../../shared/valueObjects/ValueObject'
 import { ValidationError } from '../../shared/errors/DomainError'
 
-export class ChurchId extends ValueObject<string> {
-  private constructor(value: string) {
-    super(value)
-  }
+const churchIdSchema = z.string().min(1, 'Church ID cannot be empty').brand<'ChurchId'>()
+export type ChurchId = z.infer<typeof churchIdSchema>
 
-  static create(id: string): Result<ChurchId, ValidationError> {
-    if (!id || id.trim().length === 0) {
-      return err(new ValidationError('Church ID cannot be empty'))
-    }
-    return ok(new ChurchId(id))
-  }
+export const ChurchId = {
+  create: (value: string): Result<ChurchId, ValidationError> => {
+    const result = churchIdSchema.safeParse(value)
+    if (result.success) return ok(result.data)
+    const firstError = result.error.issues[0]
+    return err(new ValidationError(firstError?.message ?? 'Church ID cannot be empty'))
+  },
 
-  static createNew(): ChurchId {
+  createNew: (): ChurchId => {
     // Using crypto.randomUUID() for unique IDs
     // In production, you might want to use cuid or nanoid
     const id = `church-${randomUUID()}`
-    return new ChurchId(id)
-  }
-
-  override toString(): string {
-    return this.value
-  }
+    return id as ChurchId
+  },
 }

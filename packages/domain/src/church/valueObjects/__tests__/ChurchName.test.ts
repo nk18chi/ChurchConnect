@@ -7,7 +7,7 @@ describe('ChurchName', () => {
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
-      expect(result.value.toString()).toBe('Tokyo Baptist Church')
+      expect(result.value).toBe('Tokyo Baptist Church')
     }
   })
 
@@ -32,7 +32,7 @@ describe('ChurchName', () => {
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
-      expect(result.value.toString()).toBe('Tokyo Church')
+      expect(result.value).toBe('Tokyo Church')
     }
   })
 })

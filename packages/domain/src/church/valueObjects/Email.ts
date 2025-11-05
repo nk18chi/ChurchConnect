@@ -1,20 +1,20 @@
-import { Result } from '../../shared/types/Result'
-import { StringValueObject } from '../../shared/valueObjects/ValueObject'
+import { z } from 'zod'
+import { Result, ok, err } from '../../shared/types/Result'
 import { ValidationError } from '../../shared/errors/DomainError'
 
-export class Email extends StringValueObject {
-  private static readonly EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+const emailSchema = z
+  .string()
+  .transform((val) => val.trim().toLowerCase())
+  .pipe(z.string().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email format'))
+  .brand<'Email'>()
 
-  private constructor(value: string) {
-    super(value)
-  }
+export type Email = z.infer<typeof emailSchema>
 
-  static create(email: string): Result<Email, ValidationError> {
-    const normalized = email?.trim().toLowerCase() || ''
-
-    return StringValueObject.validate(normalized, {
-      pattern: Email.EMAIL_REGEX,
-      errorMessage: 'Invalid email format',
-    }).map((validEmail) => new Email(validEmail))
-  }
+export const Email = {
+  create: (value: string): Result<Email, ValidationError> => {
+    const result = emailSchema.safeParse(value)
+    if (result.success) return ok(result.data)
+    const firstError = result.error.issues[0]
+    return err(new ValidationError(firstError?.message ?? 'Invalid email format'))
+  },
 }

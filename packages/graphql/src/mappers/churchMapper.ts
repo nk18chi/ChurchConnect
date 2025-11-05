@@ -8,8 +8,8 @@ import { ChurchState, isDraft, isPublished, isVerified } from '@repo/domain'
  */
 export function toGraphQLChurch(church: ChurchState) {
   const base = {
-    id: church.id.toString(),
-    name: church.name.toString(),
+    id: String(church.id),
+    name: String(church.name),
     createdAt: church.createdAt,
   }
 

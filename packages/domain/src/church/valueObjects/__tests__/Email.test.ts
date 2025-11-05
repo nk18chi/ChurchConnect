@@ -7,7 +7,7 @@ describe('Email', () => {
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
-      expect(result.value.toString()).toBe('admin@church.jp')
+      expect(result.value).toBe('admin@church.jp')
     }
   })
 
@@ -16,7 +16,7 @@ describe('Email', () => {
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
-      expect(result.value.toString()).toBe('admin@church.jp')
+      expect(result.value).toBe('admin@church.jp')
     }
   })
 

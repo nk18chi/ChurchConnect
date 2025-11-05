@@ -15,7 +15,7 @@ describe('createChurch workflow', () => {
     if (result.isOk()) {
       const church = result.value
       expect(isDraft(church)).toBe(true)
-      expect(church.name.toString()).toBe('Tokyo Baptist Church')
+      expect(church.name).toBe('Tokyo Baptist Church')
       expect(church.id).toBeDefined()
       expect(church.createdAt).toBeInstanceOf(Date)
     }
@@ -57,7 +57,7 @@ describe('createChurch workflow', () => {
 
     expect(result1.isOk() && result2.isOk()).toBe(true)
     if (result1.isOk() && result2.isOk()) {
-      expect(result1.value.id.equals(result2.value.id)).toBe(false)
+      expect(result1.value.id).not.toBe(result2.value.id)
     }
   })
 })

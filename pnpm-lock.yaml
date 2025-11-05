@@ -424,6 +424,9 @@ importers:
       neverthrow:
         specifier: ^8.2.0
         version: 8.2.0
+      zod:
+        specifier: ^4.1.12
+        version: 4.1.12
     devDependencies:
       '@jest/globals':
         specifier: ^29.7.0
@@ -510,19 +513,74 @@ importers:
       '@repo/database':
         specifier: workspace:*
         version: link:../database
+      '@repo/domain':
+        specifier: workspace:^
+        version: link:../domain
       '@repo/email':
         specifier: workspace:*
         version: link:../email
+      '@repo/infrastructure':
+        specifier: workspace:^
+        version: link:../infrastructure
       graphql:
         specifier: ^16.8.1
         version: 16.12.0
     devDependencies:
+      '@jest/globals':
+        specifier: ^29.7.0
+        version: 29.7.0
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
+      '@types/jest':
+        specifier: ^29.5.12
+        version: 29.5.14
       '@types/node':
         specifier: ^20.12.7
         version: 20.19.24
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@20.19.24)
+      ts-jest:
+        specifier: ^29.1.2
+        version: 29.4.5(@babel/core@7.28.5)(jest@29.7.0)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.4.5
+        version: 5.9.3
+
+  packages/infrastructure:
+    dependencies:
+      '@prisma/client':
+        specifier: ^5.13.0
+        version: 5.22.0(prisma@5.22.0)
+      '@repo/database':
+        specifier: workspace:*
+        version: link:../database
+      '@repo/domain':
+        specifier: workspace:*
+        version: link:../domain
+      neverthrow:
+        specifier: ^8.2.0
+        version: 8.2.0
+    devDependencies:
+      '@jest/globals':
+        specifier: ^29.7.0
+        version: 29.7.0
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/jest':
+        specifier: ^29.5.12
+        version: 29.5.14
+      '@types/node':
+        specifier: ^20.19.24
+        version: 20.19.24
+      jest:
+        specifier: ^29.7.0
+        version: 29.7.0(@types/node@20.19.24)
+      ts-jest:
+        specifier: ^29.1.2
+        version: 29.4.5(@babel/core@7.28.5)(jest@29.7.0)(typescript@5.9.3)
       typescript:
         specifier: ^5.4.5
         version: 5.9.3
@@ -11184,4 +11242,8 @@ packages:
 
   /zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+    dev: false
+
+  /zod@4.1.12:
+    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
     dev: false

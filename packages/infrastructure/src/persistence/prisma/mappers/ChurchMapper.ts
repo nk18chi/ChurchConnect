@@ -91,8 +91,8 @@ export class ChurchMapper {
     createdAt: Date
   } {
     const base = {
-      id: domain.id.toString(),
-      name: domain.name.toString(),
+      id: String(domain.id),
+      name: String(domain.name),
       createdAt: domain.createdAt,
     }
 

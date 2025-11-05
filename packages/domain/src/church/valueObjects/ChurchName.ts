@@ -1,22 +1,20 @@
-import { Result } from '../../shared/types/Result'
-import { StringValueObject } from '../../shared/valueObjects/ValueObject'
+import { z } from 'zod'
+import { Result, ok, err } from '../../shared/types/Result'
 import { ValidationError } from '../../shared/errors/DomainError'
 
-export class ChurchName extends StringValueObject {
-  private static readonly MIN_LENGTH = 2
-  private static readonly MAX_LENGTH = 200
+const churchNameSchema = z
+  .string()
+  .transform((val) => val.trim())
+  .pipe(z.string().min(2, 'Church name must be between 2 and 200 characters').max(200, 'Church name must be between 2 and 200 characters'))
+  .brand<'ChurchName'>()
 
-  private constructor(value: string) {
-    super(value)
-  }
+export type ChurchName = z.infer<typeof churchNameSchema>
 
-  static create(name: string): Result<ChurchName, ValidationError> {
-    const trimmed = name?.trim() || ''
-
-    return StringValueObject.validate(trimmed, {
-      minLength: ChurchName.MIN_LENGTH,
-      maxLength: ChurchName.MAX_LENGTH,
-      errorMessage: `Church name must be between ${ChurchName.MIN_LENGTH} and ${ChurchName.MAX_LENGTH} characters`,
-    }).map((validName) => new ChurchName(validName))
-  }
+export const ChurchName = {
+  create: (value: string): Result<ChurchName, ValidationError> => {
+    const result = churchNameSchema.safeParse(value)
+    if (result.success) return ok(result.data)
+    const firstError = result.error.issues[0]
+    return err(new ValidationError(firstError?.message ?? 'Invalid church name'))
+  },
 }
