@@ -101,6 +101,13 @@ const GET_CHURCH = gql`
         youtubeUrl
         podcastUrl
       }
+      photos {
+        id
+        url
+        caption
+        category
+        order
+      }
     }
   }
 `;
