@@ -1,5 +1,16 @@
 import { builder } from '../builder'
 import {
+  submitReview,
+  moderateReview,
+  respondToReview as respondToReviewWorkflow,
+  isPending,
+  isApproved,
+  isRejected,
+  ReviewId,
+} from '@repo/domain'
+import { getRepositoryFactory } from '../factories/repositoryFactory'
+import { mapDomainError } from '../utils/errorMapper'
+import {
   sendReviewNotification,
   sendReviewSubmittedEmail,
   sendReviewApprovedEmail,
@@ -17,7 +28,18 @@ builder.prismaObject('Review', {
     visitDate: t.expose('visitDate', { type: 'DateTime', nullable: true }),
     experienceType: t.exposeString('experienceType', { nullable: true }),
     status: t.expose('status', { type: ReviewStatus }),
+
+    // Relations
+    church: t.relation('church'),
+    user: t.relation('user'),
     response: t.relation('response', { nullable: true }),
+
+    // Moderation fields
+    moderatedAt: t.expose('moderatedAt', { type: 'DateTime', nullable: true }),
+    moderatedBy: t.exposeString('moderatedBy', { nullable: true }),
+    moderationNote: t.exposeString('moderationNote', { nullable: true }),
+
+    // Meta
     createdAt: t.expose('createdAt', { type: 'DateTime' }),
     updatedAt: t.expose('updatedAt', { type: 'DateTime' }),
   }),
@@ -34,7 +56,7 @@ builder.prismaObject('ReviewResponse', {
 })
 
 // Input types
-const CreateReviewInput = builder.inputType('CreateReviewInput', {
+const SubmitReviewInput = builder.inputType('SubmitReviewInput', {
   fields: (t) => ({
     churchId: t.string({ required: true }),
     content: t.string({ required: true }),
@@ -43,10 +65,10 @@ const CreateReviewInput = builder.inputType('CreateReviewInput', {
   }),
 })
 
-const UpdateReviewStatusInput = builder.inputType('UpdateReviewStatusInput', {
+const ModerateReviewInput = builder.inputType('ModerateReviewInput', {
   fields: (t) => ({
     reviewId: t.string({ required: true }),
-    status: t.field({ type: ReviewStatus, required: true }),
+    decision: t.string({ required: true }), // 'APPROVED' | 'REJECTED'
     moderationNote: t.string({ required: false }),
   }),
 })
@@ -54,7 +76,7 @@ const UpdateReviewStatusInput = builder.inputType('UpdateReviewStatusInput', {
 const RespondToReviewInput = builder.inputType('RespondToReviewInput', {
   fields: (t) => ({
     reviewId: t.string({ required: true }),
-    content: t.string({ required: true }),
+    responseContent: t.string({ required: true }),
   }),
 })
 
@@ -97,18 +119,40 @@ builder.queryFields((t) => ({
 
 // Mutations
 builder.mutationFields((t) => ({
-  // Create a new review
-  createReview: t.prismaField({
+  // Submit a new review (domain-driven)
+  submitReview: t.prismaField({
     type: 'Review',
     args: {
-      input: t.arg({ type: CreateReviewInput, required: true }),
+      input: t.arg({ type: SubmitReviewInput, required: true }),
     },
     resolve: async (query, _root, args, ctx) => {
       if (!ctx.userId) {
         throw new Error('Not authenticated')
       }
 
-      // Get user and church information
+      // Execute domain workflow
+      const reviewResult = submitReview({
+        churchId: args.input.churchId,
+        userId: ctx.userId,
+        content: args.input.content,
+        visitDate: args.input.visitDate ?? undefined,
+        experienceType: args.input.experienceType ?? undefined,
+      })
+
+      if (reviewResult.isErr()) {
+        throw mapDomainError(reviewResult.error)
+      }
+
+      // Persist via repository
+      const factory = getRepositoryFactory(ctx.prisma)
+      const reviewRepo = factory.createReviewRepository()
+      const savedResult = await reviewRepo.save(reviewResult.value)
+
+      if (savedResult.isErr()) {
+        throw mapDomainError(savedResult.error)
+      }
+
+      // Get user and church information for email
       const [user, church] = await Promise.all([
         ctx.prisma.user.findUnique({
           where: { id: ctx.userId },
@@ -118,61 +162,84 @@ builder.mutationFields((t) => ({
         }),
       ])
 
-      if (!user) {
-        throw new Error('User not found')
-      }
-
-      if (!church) {
-        throw new Error('Church not found')
-      }
-
-      // Create the review
-      const review = await ctx.prisma.review.create({
-        ...query,
-        data: {
-          userId: ctx.userId,
-          churchId: args.input.churchId,
-          content: args.input.content,
-          visitDate: args.input.visitDate || null,
-          experienceType: args.input.experienceType || null,
-          status: 'PENDING',
-        },
-      })
-
       // Send confirmation email to the reviewer (fire and forget)
-      if (user.email && user.name) {
+      if (user?.email && user?.name && church) {
         sendReviewSubmittedEmail({
           to: user.email,
           reviewerName: user.name,
           churchName: church.name,
-          reviewContent: review.content,
+          reviewContent: args.input.content,
         }).catch((error) => {
           console.error('Failed to send review submitted email:', error)
         })
       }
 
-      return review
+      // Return full Prisma Review
+      return ctx.prisma.review.findUniqueOrThrow({
+        ...query,
+        where: { id: String(savedResult.value.id) },
+      })
     },
   }),
 
-  // Update review status (approve/reject)
-  updateReviewStatus: t.prismaField({
+  // Moderate review (approve/reject) - domain-driven
+  moderateReview: t.prismaField({
     type: 'Review',
     args: {
-      input: t.arg({ type: UpdateReviewStatusInput, required: true }),
+      input: t.arg({ type: ModerateReviewInput, required: true }),
     },
     resolve: async (query, _root, args, ctx) => {
-      if (!ctx.userId) {
+      if (!ctx.userId || !ctx.userRole) {
         throw new Error('Not authenticated')
       }
 
-      // Check if user is admin
-      if (ctx.userRole !== 'ADMIN') {
-        throw new Error('Unauthorized: Admin access required')
+      // Validate and create ReviewId
+      const reviewIdResult = ReviewId.create(args.input.reviewId)
+      if (reviewIdResult.isErr()) {
+        throw mapDomainError(reviewIdResult.error)
       }
 
-      // Get the review with all related data
-      const review = await ctx.prisma.review.findUnique({
+      // Fetch existing review
+      const factory = getRepositoryFactory(ctx.prisma)
+      const reviewRepo = factory.createReviewRepository()
+      const existingResult = await reviewRepo.findById(reviewIdResult.value)
+
+      if (existingResult.isErr()) {
+        throw mapDomainError(existingResult.error)
+      }
+
+      const review = existingResult.value
+      if (!review) {
+        throw new Error('Review not found')
+      }
+
+      // Ensure review is pending
+      if (!isPending(review)) {
+        throw new Error('Review has already been moderated')
+      }
+
+      // Execute domain workflow
+      const moderatedResult = moderateReview({
+        review, // TypeScript now knows review is PendingReview
+        decision: args.input.decision as 'APPROVED' | 'REJECTED',
+        moderatedBy: ctx.userId,
+        moderatorRole: ctx.userRole as 'ADMIN' | 'CHURCH_ADMIN' | 'USER',
+        moderationNote: args.input.moderationNote ?? undefined,
+      })
+
+      if (moderatedResult.isErr()) {
+        throw mapDomainError(moderatedResult.error)
+      }
+
+      // Persist
+      const savedResult = await reviewRepo.save(moderatedResult.value)
+
+      if (savedResult.isErr()) {
+        throw mapDomainError(savedResult.error)
+      }
+
+      // Get the review with all related data for emails
+      const fullReview = await ctx.prisma.review.findUnique({
         where: { id: args.input.reviewId },
         include: {
           user: true,
@@ -184,35 +251,19 @@ builder.mutationFields((t) => ({
         },
       })
 
-      if (!review) {
-        throw new Error('Review not found')
-      }
-
-      // Update the review status
-      const updatedReview = await ctx.prisma.review.update({
-        ...query,
-        where: { id: args.input.reviewId },
-        data: {
-          status: args.input.status,
-          moderatedAt: new Date(),
-          moderatedBy: ctx.userId,
-          moderationNote: args.input.moderationNote || null,
-        },
-      })
-
       // Send emails if review is approved
-      if (args.input.status === 'APPROVED') {
-        const reviewUrl = `${process.env.NEXT_PUBLIC_WEB_URL || 'https://churchconnect.jp'}/churches/${review.church.slug}`
-        const portalReviewUrl = `${process.env.NEXT_PUBLIC_PORTAL_URL || 'https://portal.churchconnect.jp'}/reviews/${review.id}`
+      if (args.input.decision === 'APPROVED' && fullReview) {
+        const reviewUrl = `${process.env.NEXT_PUBLIC_WEB_URL || 'https://churchconnect.jp'}/churches/${fullReview.church.slug}`
+        const portalReviewUrl = `${process.env.NEXT_PUBLIC_PORTAL_URL || 'https://portal.churchconnect.jp'}/reviews/${fullReview.id}`
 
         // Send notification to church admin (fire and forget)
-        if (review.church.adminUser?.email && review.church.adminUser?.name) {
+        if (fullReview.church.adminUser?.email && fullReview.church.adminUser?.name) {
           sendReviewNotification({
-            to: review.church.adminUser.email,
-            churchName: review.church.name,
-            reviewerName: review.user.name || 'Anonymous',
-            reviewContent: review.content,
-            reviewDate: review.createdAt.toLocaleDateString('en-US', {
+            to: fullReview.church.adminUser.email,
+            churchName: fullReview.church.name,
+            reviewerName: fullReview.user.name || 'Anonymous',
+            reviewContent: fullReview.content,
+            reviewDate: fullReview.createdAt.toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',
@@ -224,12 +275,12 @@ builder.mutationFields((t) => ({
         }
 
         // Send approval notification to reviewer (fire and forget)
-        if (review.user.email && review.user.name) {
+        if (fullReview.user.email && fullReview.user.name) {
           sendReviewApprovedEmail({
-            to: review.user.email,
-            reviewerName: review.user.name,
-            churchName: review.church.name,
-            reviewContent: review.content,
+            to: fullReview.user.email,
+            reviewerName: fullReview.user.name,
+            churchName: fullReview.church.name,
+            reviewContent: fullReview.content,
             reviewUrl,
           }).catch((error) => {
             console.error('Failed to send review approval email to reviewer:', error)
@@ -237,128 +288,78 @@ builder.mutationFields((t) => ({
         }
       }
 
-      return updatedReview
+      // Return full Prisma Review
+      return ctx.prisma.review.findUniqueOrThrow({
+        ...query,
+        where: { id: String(savedResult.value.id) },
+      })
     },
   }),
 
-  // Church admin responds to a review
+  // Church admin responds to a review - domain-driven
   respondToReview: t.prismaField({
-    type: 'ReviewResponse',
+    type: 'Review',
     args: {
       input: t.arg({ type: RespondToReviewInput, required: true }),
     },
     resolve: async (query, _root, args, ctx) => {
-      // Check authentication
-      if (!ctx.userId) {
+      if (!ctx.userId || !ctx.userRole) {
         throw new Error('Not authenticated')
       }
 
-      // Check user is CHURCH_ADMIN
-      if (ctx.userRole !== 'CHURCH_ADMIN') {
-        throw new Error('Unauthorized: Church admin access required')
+      // Validate and create ReviewId
+      const reviewIdResult = ReviewId.create(args.input.reviewId)
+      if (reviewIdResult.isErr()) {
+        throw mapDomainError(reviewIdResult.error)
       }
 
-      // Get church for this admin
-      const church = await ctx.prisma.church.findUnique({
-        where: { adminUserId: ctx.userId },
-        select: { id: true },
-      })
+      // Fetch existing review
+      const factory = getRepositoryFactory(ctx.prisma)
+      const reviewRepo = factory.createReviewRepository()
+      const existingResult = await reviewRepo.findById(reviewIdResult.value)
 
-      if (!church) {
-        throw new Error('No church found for this user')
+      if (existingResult.isErr()) {
+        throw mapDomainError(existingResult.error)
       }
 
-      // Verify review belongs to this church and is approved
-      const review = await ctx.prisma.review.findUnique({
-        where: { id: args.input.reviewId },
-        select: { churchId: true, status: true, response: true },
-      })
-
+      const review = existingResult.value
       if (!review) {
         throw new Error('Review not found')
       }
 
-      if (review.churchId !== church.id) {
-        throw new Error('Review does not belong to your church')
+      // Ensure review is approved or rejected (can receive response)
+      if (!isApproved(review) && !isRejected(review)) {
+        throw new Error('Can only respond to approved or rejected reviews')
       }
 
-      if (review.status !== 'APPROVED') {
-        throw new Error('Can only respond to approved reviews')
+      // Check authorization (only ADMIN and CHURCH_ADMIN can respond)
+      if (ctx.userRole !== 'ADMIN' && ctx.userRole !== 'CHURCH_ADMIN') {
+        throw new Error('Only administrators and church administrators can respond to reviews')
       }
 
-      if (review.response) {
-        throw new Error('Review already has a response. Use update instead.')
-      }
-
-      // Get user info for respondedBy field
-      const user = await ctx.prisma.user.findUnique({
-        where: { id: ctx.userId },
-        select: { name: true, email: true },
+      // Execute domain workflow
+      const respondedResult = respondToReviewWorkflow({
+        review, // TypeScript now knows review is ApprovedReview | RejectedReview
+        responseContent: args.input.responseContent,
+        respondedBy: ctx.userId,
       })
 
-      // Create the response
-      const response = await ctx.prisma.reviewResponse.create({
+      if (respondedResult.isErr()) {
+        throw mapDomainError(respondedResult.error)
+      }
+
+      // Persist
+      const savedResult = await reviewRepo.save(respondedResult.value)
+
+      if (savedResult.isErr()) {
+        throw mapDomainError(savedResult.error)
+      }
+
+      // Return full Prisma Review (with response relation)
+      return ctx.prisma.review.findUniqueOrThrow({
         ...query,
-        data: {
-          reviewId: args.input.reviewId,
-          content: args.input.content,
-          respondedBy: user?.name || user?.email || 'Church Admin',
-        },
-      })
-
-      return response
-    },
-  }),
-
-  // Church admin deletes their response to a review
-  deleteReviewResponse: t.prismaField({
-    type: 'ReviewResponse',
-    args: {
-      reviewId: t.arg.string({ required: true }),
-    },
-    resolve: async (query, _root, args, ctx) => {
-      // Check authentication
-      if (!ctx.userId) {
-        throw new Error('Not authenticated')
-      }
-
-      // Check user is CHURCH_ADMIN
-      if (ctx.userRole !== 'CHURCH_ADMIN') {
-        throw new Error('Unauthorized: Church admin access required')
-      }
-
-      // Get church for this admin
-      const church = await ctx.prisma.church.findUnique({
-        where: { adminUserId: ctx.userId },
-        select: { id: true },
-      })
-
-      if (!church) {
-        throw new Error('No church found for this user')
-      }
-
-      // Verify review belongs to this church
-      const review = await ctx.prisma.review.findUnique({
-        where: { id: args.reviewId },
-        select: { churchId: true, response: { select: { id: true } } },
-      })
-
-      if (!review) {
-        throw new Error('Review not found')
-      }
-
-      if (review.churchId !== church.id) {
-        throw new Error('Review does not belong to your church')
-      }
-
-      if (!review.response) {
-        throw new Error('Review does not have a response')
-      }
-
-      // Delete the response
-      return ctx.prisma.reviewResponse.delete({
-        ...query,
-        where: { id: review.response.id },
+        where: { id: String(savedResult.value.id) },
+        include: { response: true },
       })
     },
   }),

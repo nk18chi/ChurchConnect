@@ -1,5 +1,5 @@
 import { PrismaClient } from '@repo/database'
-import { PrismaChurchRepository } from '@repo/infrastructure'
+import { PrismaChurchRepository, PrismaReviewRepository } from '@repo/infrastructure'
 
 /**
  * Factory for creating repository instances
@@ -10,6 +10,10 @@ export class RepositoryFactory {
 
   createChurchRepository() {
     return new PrismaChurchRepository(this.prisma)
+  }
+
+  createReviewRepository() {
+    return new PrismaReviewRepository(this.prisma)
   }
 }
 
