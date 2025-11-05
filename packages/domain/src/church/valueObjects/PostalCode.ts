@@ -1,27 +1,33 @@
+import { z } from 'zod'
 import { Result, ok, err } from '../../shared/types/Result'
-import { StringValueObject } from '../../shared/valueObjects/ValueObject'
 import { ValidationError } from '../../shared/errors/DomainError'
 
-export class PostalCode extends StringValueObject {
-  // Japanese postal code: 7 digits, optionally with hyphen after 3rd digit
-  private static readonly POSTAL_CODE_REGEX = /^(\d{3})-?(\d{4})$/
-
-  private constructor(value: string) {
-    super(value)
-  }
-
-  static create(postalCode: string): Result<PostalCode, ValidationError> {
-    const cleaned = postalCode?.trim().replace(/\s/g, '') || ''
-
-    const match = cleaned.match(PostalCode.POSTAL_CODE_REGEX)
-    if (!match) {
-      return err(
-        new ValidationError('Invalid postal code format. Expected format: 123-4567 or 1234567')
-      )
-    }
-
+/**
+ * Japanese postal code: 7 digits, optionally with hyphen after 3rd digit
+ * Examples: 123-4567, 1234567
+ * Always normalized to format with hyphen: 123-4567
+ */
+const postalCodeSchema = z
+  .string()
+  .trim()
+  .transform((val) => val.replace(/\s/g, ''))
+  .pipe(
+    z.string().regex(/^(\d{3})-?(\d{4})$/, 'Invalid postal code format. Expected format: 123-4567 or 1234567')
+  )
+  .transform((val) => {
     // Normalize to format with hyphen
-    const normalized = `${match[1]}-${match[2]}`
-    return ok(new PostalCode(normalized))
-  }
+    const match = val.match(/^(\d{3})-?(\d{4})$/)
+    return match ? `${match[1]}-${match[2]}` : val
+  })
+  .brand<'PostalCode'>()
+
+export type PostalCode = z.infer<typeof postalCodeSchema>
+
+export const PostalCode = {
+  create: (value: string): Result<PostalCode, ValidationError> => {
+    const result = postalCodeSchema.safeParse(value)
+    if (result.success) return ok(result.data)
+    const errorMessage = result.error?.errors?.[0]?.message ?? 'Invalid postal code'
+    return err(new ValidationError(errorMessage))
+  },
 }

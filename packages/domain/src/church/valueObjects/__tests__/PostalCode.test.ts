@@ -7,7 +7,7 @@ describe('PostalCode', () => {
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
-      expect(result.value.toString()).toBe('100-0001')
+      expect(String(result.value)).toBe('100-0001')
     }
   })
 
@@ -16,7 +16,7 @@ describe('PostalCode', () => {
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
-      expect(result.value.toString()).toBe('100-0001')
+      expect(String(result.value)).toBe('100-0001')
     }
   })
 
