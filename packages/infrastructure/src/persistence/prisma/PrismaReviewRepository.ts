@@ -13,22 +13,20 @@ import { ResultAsync } from 'neverthrow'
 import { ReviewMapper } from './mappers/ReviewMapper'
 
 /**
- * Prisma implementation of IReviewRepository
+ * Creates a Prisma-based Review repository with functional composition
  *
- * Handles persistence of ReviewState to PostgreSQL database
- * using Prisma ORM and ReviewMapper for translation
+ * @param prisma - Prisma client instance
+ * @returns Repository functions for Review aggregate
  */
-export class PrismaReviewRepository implements IReviewRepository {
-  constructor(private readonly prisma: PrismaClient) {}
-
+export const createReviewRepository = (prisma: PrismaClient): IReviewRepository => {
   /**
    * Find review by ID
    * Includes response relation for RespondedReview state
    */
-  findById(id: ReviewId): AsyncResult<ReviewState | null, DomainError> {
-    return ResultAsync.fromPromise(
-      this.prisma.review.findUnique({
-        where: { id: id.toString() },
+  const findById = (id: ReviewId): AsyncResult<ReviewState | null, DomainError> =>
+    ResultAsync.fromPromise(
+      prisma.review.findUnique({
+        where: { id: String(id) },
         include: { response: true },
       }),
       (error) => new InfrastructureError(
@@ -47,16 +45,15 @@ export class PrismaReviewRepository implements IReviewRepository {
           : Promise.reject(domainResult.error)
       ).mapErr((error) => error as DomainError)
     })
-  }
 
   /**
    * Find all reviews for a specific church
    * Includes response relation for RespondedReview states
    */
-  findByChurchId(churchId: ChurchId): AsyncResult<ReviewState[], DomainError> {
-    return ResultAsync.fromPromise(
-      this.prisma.review.findMany({
-        where: { churchId: churchId.toString() },
+  const findByChurchId = (churchId: ChurchId): AsyncResult<ReviewState[], DomainError> =>
+    ResultAsync.fromPromise(
+      prisma.review.findMany({
+        where: { churchId: String(churchId) },
         include: { response: true },
         orderBy: { createdAt: 'desc' },
       }),
@@ -83,23 +80,22 @@ export class PrismaReviewRepository implements IReviewRepository {
 
       return ResultAsync.fromSafePromise(Promise.resolve(domainReviews))
     })
-  }
 
   /**
    * Save review (create or update)
    *
    * For RespondedReview state, also handles the ReviewResponse relation
    */
-  save(review: ReviewState): AsyncResult<ReviewState, DomainError> {
+  const save = (review: ReviewState): AsyncResult<ReviewState, DomainError> => {
     const prismaData = ReviewMapper.toPrisma(review)
 
     // For RespondedReview, we need to handle the response separately
     if (review.tag === 'Responded') {
       return ResultAsync.fromPromise(
-        this.prisma.$transaction(async (tx) => {
+        prisma.$transaction(async (tx) => {
           // Upsert the review
           const savedReview = await tx.review.upsert({
-            where: { id: review.id.toString() },
+            where: { id: String(review.id) },
             create: {
               ...prismaData,
             },
@@ -110,9 +106,9 @@ export class PrismaReviewRepository implements IReviewRepository {
 
           // Upsert the response
           await tx.reviewResponse.upsert({
-            where: { reviewId: review.id.toString() },
+            where: { reviewId: String(review.id) },
             create: {
-              reviewId: review.id.toString(),
+              reviewId: String(review.id),
               content: review.responseContent,
               respondedBy: review.respondedBy,
               createdAt: review.respondedAt,
@@ -126,7 +122,7 @@ export class PrismaReviewRepository implements IReviewRepository {
 
           // Fetch with response for mapping back
           return await tx.review.findUnique({
-            where: { id: review.id.toString() },
+            where: { id: String(review.id) },
             include: { response: true },
           })
         }),
@@ -152,8 +148,8 @@ export class PrismaReviewRepository implements IReviewRepository {
 
     // For other states, simple upsert
     return ResultAsync.fromPromise(
-      this.prisma.review.upsert({
-        where: { id: review.id.toString() },
+      prisma.review.upsert({
+        where: { id: String(review.id) },
         create: {
           ...prismaData,
         },
@@ -180,15 +176,15 @@ export class PrismaReviewRepository implements IReviewRepository {
    * Delete review
    * Cascade will automatically delete the response if it exists
    */
-  delete(id: ReviewId): AsyncResult<void, DomainError> {
-    return ResultAsync.fromPromise(
-      this.prisma.review.delete({
-        where: { id: id.toString() },
+  const deleteReview = (id: ReviewId): AsyncResult<void, DomainError> =>
+    ResultAsync.fromPromise(
+      prisma.review.delete({
+        where: { id: String(id) },
       }),
       (error) => {
         // Check if it's a "record not found" error
         if ((error as any).code === 'P2025') {
-          return new NotFoundError('Review', id.toString())
+          return new NotFoundError('Review', String(id))
         }
         return new InfrastructureError(
           `Database error deleting review: ${(error as Error).message}`,
@@ -196,5 +192,39 @@ export class PrismaReviewRepository implements IReviewRepository {
         )
       }
     ).map(() => undefined)
+
+  return {
+    findById,
+    findByChurchId,
+    save,
+    delete: deleteReview,
+  }
+}
+
+/**
+ * Legacy class-based export for backward compatibility
+ * @deprecated Use createReviewRepository instead
+ */
+export class PrismaReviewRepository implements IReviewRepository {
+  private readonly repo: IReviewRepository
+
+  constructor(prisma: PrismaClient) {
+    this.repo = createReviewRepository(prisma)
+  }
+
+  findById(id: ReviewId): AsyncResult<ReviewState | null, DomainError> {
+    return this.repo.findById(id)
+  }
+
+  findByChurchId(churchId: ChurchId): AsyncResult<ReviewState[], DomainError> {
+    return this.repo.findByChurchId(churchId)
+  }
+
+  save(review: ReviewState): AsyncResult<ReviewState, DomainError> {
+    return this.repo.save(review)
+  }
+
+  delete(id: ReviewId): AsyncResult<void, DomainError> {
+    return this.repo.delete(id)
   }
 }

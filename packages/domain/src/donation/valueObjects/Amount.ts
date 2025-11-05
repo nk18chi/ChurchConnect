@@ -21,7 +21,7 @@ export const Amount = {
     const result = amountSchema.safeParse(value)
     if (result.success) return ok(result.data)
     // Get the first error message, which contains our custom validation messages
-    const errorMessage = result.error?.errors?.[0]?.message ?? 'Invalid amount'
+    const errorMessage = result.error.issues[0]?.message ?? 'Invalid amount'
     return err(new ValidationError(errorMessage))
   },
 }

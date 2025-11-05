@@ -27,7 +27,7 @@ export const PostalCode = {
   create: (value: string): Result<PostalCode, ValidationError> => {
     const result = postalCodeSchema.safeParse(value)
     if (result.success) return ok(result.data)
-    const errorMessage = result.error?.errors?.[0]?.message ?? 'Invalid postal code'
+    const errorMessage = result.error.issues[0]?.message ?? 'Invalid postal code'
     return err(new ValidationError(errorMessage))
   },
 }
