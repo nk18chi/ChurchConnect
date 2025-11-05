@@ -1,26 +1,25 @@
-import { Result } from '../../shared/types/Result'
-import { StringValueObject } from '../../shared/valueObjects/ValueObject'
+import { z } from 'zod'
+import { Result, ok, err } from '../../shared/types/Result'
 import { ValidationError } from '../../shared/errors/DomainError'
 
-export class ReviewContent extends StringValueObject {
-  private static readonly MIN_LENGTH = 10
-  private static readonly MAX_LENGTH = 2000
+const reviewContentSchema = z
+  .string()
+  .transform((val) => val.trim())
+  .pipe(
+    z
+      .string()
+      .min(10, 'Review content must be between 10 and 2000 characters')
+      .max(2000, 'Review content must be between 10 and 2000 characters')
+  )
+  .brand<'ReviewContent'>()
 
-  private constructor(value: string) {
-    super(value)
-  }
+export type ReviewContent = z.infer<typeof reviewContentSchema>
 
-  static create(content: string): Result<ReviewContent, ValidationError> {
-    const trimmed = content.trim()
-
-    return StringValueObject.validate(trimmed, {
-      minLength: ReviewContent.MIN_LENGTH,
-      maxLength: ReviewContent.MAX_LENGTH,
-      errorMessage: `Review content must be between ${ReviewContent.MIN_LENGTH} and ${ReviewContent.MAX_LENGTH} characters`
-    }).map(validContent => new ReviewContent(validContent))
-  }
-
-  toString(): string {
-    return this.value
-  }
+export const ReviewContent = {
+  create: (value: string): Result<ReviewContent, ValidationError> => {
+    const result = reviewContentSchema.safeParse(value)
+    if (result.success) return ok(result.data)
+    const firstError = result.error.issues[0]
+    return err(new ValidationError(firstError?.message ?? 'Invalid review content'))
+  },
 }

@@ -1,40 +1,42 @@
+import { describe, it, expect } from '@jest/globals'
 import { ReviewContent } from '../ReviewContent'
 
 describe('ReviewContent', () => {
   it('should create valid review content', () => {
-    const result = ReviewContent.create('Great church with friendly community!')
+    const content = 'This is a great church with wonderful community!'
+    const result = ReviewContent.create(content)
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
-      expect(result.value.toString()).toBe('Great church with friendly community!')
+      expect(result.value).toBe(content)
     }
   })
 
-  it('should reject content that is too short', () => {
-    const result = ReviewContent.create('Hi')
+  it('should fail for too short content', () => {
+    const result = ReviewContent.create('Too short')
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
-      expect(result.error.message).toContain('10 and 2000 characters')
+      expect(result.error.message).toContain('10 and 2000')
     }
   })
 
-  it('should reject content that is too long', () => {
-    const longContent = 'a'.repeat(2001)
+  it('should fail for too long content', () => {
+    const longContent = 'A'.repeat(2001)
     const result = ReviewContent.create(longContent)
 
     expect(result.isErr()).toBe(true)
     if (result.isErr()) {
-      expect(result.error.message).toContain('10 and 2000 characters')
+      expect(result.error.message).toContain('10 and 2000')
     }
   })
 
   it('should trim whitespace', () => {
-    const result = ReviewContent.create('  Good church  ')
+    const result = ReviewContent.create('  Great church with amazing people!  ')
 
     expect(result.isOk()).toBe(true)
     if (result.isOk()) {
-      expect(result.value.toString()).toBe('Good church')
+      expect(result.value).toBe('Great church with amazing people!')
     }
   })
 })

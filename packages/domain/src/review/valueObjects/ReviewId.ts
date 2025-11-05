@@ -1,27 +1,20 @@
 import { randomUUID } from 'crypto'
+import { z } from 'zod'
 import { Result, ok, err } from '../../shared/types/Result'
-import { ValueObject } from '../../shared/valueObjects/ValueObject'
 import { ValidationError } from '../../shared/errors/DomainError'
 
-export class ReviewId extends ValueObject<string> {
-  private constructor(value: string) {
-    super(value)
-  }
+const reviewIdSchema = z.string().uuid('Invalid review ID format').brand<'ReviewId'>()
+export type ReviewId = z.infer<typeof reviewIdSchema>
 
-  static create(id: string): Result<ReviewId, ValidationError> {
-    if (!id || id.length === 0) {
-      return err(new ValidationError('Review ID cannot be empty'))
-    }
-    return ok(new ReviewId(id))
-  }
+export const ReviewId = {
+  create: (value: string): Result<ReviewId, ValidationError> => {
+    const result = reviewIdSchema.safeParse(value)
+    if (result.success) return ok(result.data)
+    const firstError = result.error.issues[0]
+    return err(new ValidationError(firstError?.message ?? 'Invalid review ID'))
+  },
 
-  static createNew(): ReviewId {
-    // Using UUID for now - matches Church domain pattern
-    // Prisma will generate cuid at database level
-    return new ReviewId(randomUUID())
-  }
-
-  toString(): string {
-    return this.value
-  }
+  createNew: (): ReviewId => {
+    return randomUUID() as ReviewId
+  },
 }
