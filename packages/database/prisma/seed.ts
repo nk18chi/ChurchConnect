@@ -777,6 +777,58 @@ async function main() {
             viewsThisMonth: 32,
           },
         },
+        photos: {
+          create: [
+            {
+              url: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3',
+              publicId: 'church-interior-1',
+              caption: 'Main sanctuary',
+              category: 'interior',
+              order: 1,
+              uploadedBy: churchAdmin5.id,
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1478147427282-58a87a120781',
+              publicId: 'church-exterior-1',
+              caption: 'Church building exterior',
+              category: 'exterior',
+              order: 2,
+              uploadedBy: churchAdmin5.id,
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1507692049790-de58290a4334',
+              publicId: 'church-worship-1',
+              caption: 'Sunday worship service',
+              category: 'worship',
+              order: 3,
+              uploadedBy: churchAdmin5.id,
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1519491050282-cf00c82424b4',
+              publicId: 'church-community-1',
+              caption: 'Community fellowship',
+              category: 'community',
+              order: 4,
+              uploadedBy: churchAdmin5.id,
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1490367532201-b9bc1dc483f6',
+              publicId: 'church-interior-2',
+              caption: 'Prayer room',
+              category: 'interior',
+              order: 5,
+              uploadedBy: churchAdmin5.id,
+            },
+            {
+              url: 'https://images.unsplash.com/photo-1544864327-2660fa1d5c8b',
+              publicId: 'church-exterior-2',
+              caption: 'Church entrance',
+              category: 'exterior',
+              order: 6,
+              uploadedBy: churchAdmin5.id,
+            },
+          ],
+        },
       },
     })
   }
