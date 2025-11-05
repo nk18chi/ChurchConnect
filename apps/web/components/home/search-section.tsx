@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@repo/ui";
 import { Search, Church } from "lucide-react";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 // Japan's 47 prefectures
 const PREFECTURES = [
@@ -75,6 +76,7 @@ const DENOMINATIONS = [
 
 export function SearchSection() {
   const router = useRouter();
+  const { t, locale } = useLocale();
   const [prefecture, setPrefecture] = useState("");
   const [denomination, setDenomination] = useState("");
 
@@ -89,6 +91,10 @@ export function SearchSection() {
     router.push(queryString ? `/churches?${queryString}` : "/churches");
   };
 
+  // Get localized first option labels
+  const prefectureAllLabel = locale === 'ja' ? '全国' : 'All Japan';
+  const denominationAllLabel = locale === 'ja' ? '指定しない' : 'Any';
+
   return (
     <section className="py-16 bg-gradient-to-b from-blue-50 to-white">
       <div className="container mx-auto px-4">
@@ -102,7 +108,7 @@ export function SearchSection() {
                   <Church className="h-6 w-6 text-blue-600" />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-900">
-                  教会を探す
+                  {t.search.title}
                 </h2>
               </div>
             </div>
@@ -113,14 +119,15 @@ export function SearchSection() {
                 {/* Prefecture dropdown */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    都道府県
+                    {t.search.prefecture}
                   </label>
                   <select
                     value={prefecture}
                     onChange={(e) => setPrefecture(e.target.value)}
                     className="w-full h-12 px-4 rounded-lg border border-gray-300 bg-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
-                    {PREFECTURES.map((pref) => (
+                    <option value="">{prefectureAllLabel}</option>
+                    {PREFECTURES.slice(1).map((pref) => (
                       <option key={pref.value} value={pref.value}>
                         {pref.label}
                       </option>
@@ -131,14 +138,15 @@ export function SearchSection() {
                 {/* Denomination dropdown */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    教派・宗派
+                    {t.search.denomination}
                   </label>
                   <select
                     value={denomination}
                     onChange={(e) => setDenomination(e.target.value)}
                     className="w-full h-12 px-4 rounded-lg border border-gray-300 bg-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
-                    {DENOMINATIONS.map((denom) => (
+                    <option value="">{denominationAllLabel}</option>
+                    {DENOMINATIONS.slice(1).map((denom) => (
                       <option key={denom.value} value={denom.value}>
                         {denom.label}
                       </option>
@@ -154,15 +162,15 @@ export function SearchSection() {
                 className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors"
               >
                 <Search className="mr-2 h-5 w-5" />
-                検索
+                {t.search.searchButton}
               </Button>
             </form>
 
             {/* Helper text */}
             <p className="mt-6 text-center text-sm text-gray-600">
-              または{" "}
+              {locale === 'ja' ? 'または' : 'or'}{" "}
               <a href="/churches" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">
-                全ての教会を見る
+                {t.search.browseAll}
               </a>
             </p>
           </div>
@@ -171,15 +179,15 @@ export function SearchSection() {
           <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
               <div className="text-3xl font-bold text-blue-600">1,000+</div>
-              <div className="text-sm text-gray-600 mt-1">登録教会数</div>
+              <div className="text-sm text-gray-600 mt-1">{t.search.stats.churches}</div>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
               <div className="text-3xl font-bold text-blue-600">47</div>
-              <div className="text-sm text-gray-600 mt-1">都道府県</div>
+              <div className="text-sm text-gray-600 mt-1">{t.search.stats.prefectures}</div>
             </div>
             <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
               <div className="text-3xl font-bold text-blue-600">12+</div>
-              <div className="text-sm text-gray-600 mt-1">教派・宗派</div>
+              <div className="text-sm text-gray-600 mt-1">{t.search.stats.denominations}</div>
             </div>
           </div>
         </div>

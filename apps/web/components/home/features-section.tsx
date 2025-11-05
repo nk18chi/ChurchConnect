@@ -1,43 +1,43 @@
-import { MapPin, Globe, Calendar, Heart } from "lucide-react";
+"use client";
 
-const features = [
-  {
-    icon: MapPin,
-    title: "Find Churches Near You",
-    description:
-      "Search by prefecture and city to discover churches in your area.",
-  },
-  {
-    icon: Globe,
-    title: "Multiple Languages",
-    description:
-      "Find churches offering services in Japanese, English, Korean, and more.",
-  },
-  {
-    icon: Calendar,
-    title: "Service Times",
-    description:
-      "View worship service schedules and plan your visit accordingly.",
-  },
-  {
-    icon: Heart,
-    title: "Connect with Community",
-    description:
-      "Discover church events, ministries, and ways to get involved.",
-  },
-];
+import { MapPin, Globe, Calendar, Heart } from "lucide-react";
+import { useLocale } from "@/lib/i18n/locale-context";
 
 export function FeaturesSection() {
+  const { t } = useLocale();
+
+  const features = [
+    {
+      icon: MapPin,
+      title: t.features.findNearby.title,
+      description: t.features.findNearby.description,
+    },
+    {
+      icon: Globe,
+      title: t.features.multiLanguage.title,
+      description: t.features.multiLanguage.description,
+    },
+    {
+      icon: Calendar,
+      title: t.features.serviceTimes.title,
+      description: t.features.serviceTimes.description,
+    },
+    {
+      icon: Heart,
+      title: t.features.community.title,
+      description: t.features.community.description,
+    },
+  ];
+
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold text-gray-900">
-            Why Use ChurchConnect?
+            {t.features.title}
           </h2>
           <p className="mt-4 text-lg text-gray-600 max-w-2xl mx-auto">
-            Your comprehensive directory for finding and connecting with
-            churches across Japan.
+            {t.features.description}
           </p>
         </div>
 

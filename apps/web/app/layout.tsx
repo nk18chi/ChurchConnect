@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import SessionProvider from "./components/session-provider";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { LocaleProvider } from "@/lib/i18n/locale-context";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -58,11 +59,13 @@ export default function RootLayout({
         <ErrorBoundary>
           <SessionProvider>
             <ApolloProvider>
-              <div className="flex min-h-screen flex-col">
-                <Header />
-                <main className="flex-1">{children}</main>
-                <Footer />
-              </div>
+              <LocaleProvider>
+                <div className="flex min-h-screen flex-col">
+                  <Header />
+                  <main className="flex-1">{children}</main>
+                  <Footer />
+                </div>
+              </LocaleProvider>
             </ApolloProvider>
           </SessionProvider>
         </ErrorBoundary>
