@@ -13,3 +13,9 @@ export const DateTimeScalar = builder.scalarType('DateTime', {
     throw new Error('Invalid date value')
   },
 })
+
+// JSON scalar for flexible metadata
+export const JsonScalar = builder.scalarType('Json', {
+  serialize: (value: unknown) => value,
+  parseValue: (value: unknown) => value,
+})

@@ -10,6 +10,10 @@ export const builder = new SchemaBuilder<{
       Input: Date
       Output: Date
     }
+    Json: {
+      Input: unknown
+      Output: unknown
+    }
   }
   Context: {
     prisma: typeof prisma
