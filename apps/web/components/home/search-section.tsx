@@ -96,102 +96,64 @@ export function SearchSection() {
   const denominationAllLabel = locale === 'ja' ? '指定しない' : 'Any';
 
   return (
-    <section className="py-16 bg-gradient-to-b from-blue-50 to-white">
-      <div className="container mx-auto px-4">
-        <div className="mx-auto max-w-4xl">
-          {/* Single unified search card with Church icon */}
-          <div className="rounded-xl border-2 border-blue-100 bg-white p-8 shadow-lg">
-            {/* Header with icon */}
-            <div className="flex items-center justify-center mb-6">
-              <div className="flex items-center gap-3">
-                <div className="rounded-full bg-blue-100 p-3">
-                  <Church className="h-6 w-6 text-blue-600" />
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {t.search.title}
-                </h2>
-              </div>
+    <div className="w-full max-w-5xl mx-auto">
+      {/* Compact search card */}
+      <div className="rounded-2xl bg-white p-6 shadow-2xl">
+        {/* Search form */}
+        <form onSubmit={handleSearch}>
+          <div className="flex flex-col md:flex-row gap-4">
+            {/* Prefecture dropdown */}
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                {t.search.prefecture}
+              </label>
+              <select
+                value={prefecture}
+                onChange={(e) => setPrefecture(e.target.value)}
+                className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">{prefectureAllLabel}</option>
+                {PREFECTURES.slice(1).map((pref) => (
+                  <option key={pref.value} value={pref.value}>
+                    {pref.label}
+                  </option>
+                ))}
+              </select>
             </div>
 
-            {/* Search form */}
-            <form onSubmit={handleSearch}>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                {/* Prefecture dropdown */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t.search.prefecture}
-                  </label>
-                  <select
-                    value={prefecture}
-                    onChange={(e) => setPrefecture(e.target.value)}
-                    className="w-full h-12 px-4 rounded-lg border border-gray-300 bg-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  >
-                    <option value="">{prefectureAllLabel}</option>
-                    {PREFECTURES.slice(1).map((pref) => (
-                      <option key={pref.value} value={pref.value}>
-                        {pref.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+            {/* Denomination dropdown */}
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                {t.search.denomination}
+              </label>
+              <select
+                value={denomination}
+                onChange={(e) => setDenomination(e.target.value)}
+                className="w-full h-12 px-4 rounded-lg border border-gray-200 bg-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">{denominationAllLabel}</option>
+                {DENOMINATIONS.slice(1).map((denom) => (
+                  <option key={denom.value} value={denom.value}>
+                    {denom.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-                {/* Denomination dropdown */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t.search.denomination}
-                  </label>
-                  <select
-                    value={denomination}
-                    onChange={(e) => setDenomination(e.target.value)}
-                    className="w-full h-12 px-4 rounded-lg border border-gray-300 bg-white text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                  >
-                    <option value="">{denominationAllLabel}</option>
-                    {DENOMINATIONS.slice(1).map((denom) => (
-                      <option key={denom.value} value={denom.value}>
-                        {denom.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Single search button */}
+            {/* Search button */}
+            <div className="flex items-end">
               <Button
                 type="submit"
                 size="lg"
-                className="w-full h-14 text-lg font-semibold bg-blue-600 hover:bg-blue-700 transition-colors"
+                className="h-12 px-8 bg-blue-600 hover:bg-blue-700 rounded-full text-white font-semibold"
               >
-                <Search className="mr-2 h-5 w-5" />
+                <Search className="mr-2 h-4 w-4" />
                 {t.search.searchButton}
               </Button>
-            </form>
-
-            {/* Helper text */}
-            <p className="mt-6 text-center text-sm text-gray-600">
-              {locale === 'ja' ? 'または' : 'or'}{" "}
-              <a href="/churches" className="text-blue-600 hover:text-blue-700 hover:underline font-medium">
-                {t.search.browseAll}
-              </a>
-            </p>
-          </div>
-
-          {/* Stats or info cards below */}
-          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-              <div className="text-3xl font-bold text-blue-600">1,000+</div>
-              <div className="text-sm text-gray-600 mt-1">{t.search.stats.churches}</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-              <div className="text-3xl font-bold text-blue-600">47</div>
-              <div className="text-sm text-gray-600 mt-1">{t.search.stats.prefectures}</div>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-              <div className="text-3xl font-bold text-blue-600">12+</div>
-              <div className="text-sm text-gray-600 mt-1">{t.search.stats.denominations}</div>
             </div>
           </div>
-        </div>
+        </form>
       </div>
-    </section>
+    </div>
   );
 }

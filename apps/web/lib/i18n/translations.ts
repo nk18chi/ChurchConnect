@@ -4,11 +4,16 @@ export const translations = {
   ja: {
     // Hero Section
     hero: {
-      title: 'あなたの教会を見つけよう',
-      subtitle: '日本全国',
+      title: '信仰でつながる',
+      subtitle: 'あなたの教会を見つけよう',
       description: '日本全国の教会を検索できます。場所、教派、言語から探して、あなたに合った礼拝コミュニティとつながりましょう。',
       findChurches: '教会を探す',
       learnMore: '詳しく見る',
+      stats: {
+        churches: '登録教会数',
+        prefectures: '都道府県',
+        denominations: '教派・宗派',
+      },
     },
     // Search Section
     search: {
@@ -63,11 +68,16 @@ export const translations = {
   en: {
     // Hero Section
     hero: {
-      title: 'Find Your Church',
-      subtitle: 'Across Japan',
+      title: 'United in Faith',
+      subtitle: 'Find Your Church',
       description: 'Discover churches across Japan. Search by location, denomination, and language. Connect with worship communities near you.',
       findChurches: 'Find Churches',
       learnMore: 'Learn More',
+      stats: {
+        churches: 'Registered Churches',
+        prefectures: 'Prefectures',
+        denominations: 'Denominations',
+      },
     },
     // Search Section
     search: {
