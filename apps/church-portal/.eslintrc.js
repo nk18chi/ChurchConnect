@@ -1,3 +1,6 @@
 module.exports = {
-  extends: ["@repo/eslint-config/next.js"],
+  extends: ["next/core-web-vitals"],
+  rules: {
+    "react/no-unescaped-entities": "off",
+  },
 };
