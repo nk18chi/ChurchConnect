@@ -6,3 +6,4 @@ export {
   hasRole,
   requireRole,
 } from "./utils"
+export { decode } from "next-auth/jwt"

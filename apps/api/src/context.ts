@@ -1,6 +1,6 @@
 import { prisma } from '@repo/database'
 import type { Request, Response } from 'express'
-import { decode } from 'next-auth/jwt'
+import { decode } from '@repo/auth'
 
 export interface Context {
   prisma: typeof prisma
