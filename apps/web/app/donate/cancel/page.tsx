@@ -1,6 +1,5 @@
 import Link from 'next/link'
-import { Button } from '@repo/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@repo/ui/components/card'
+import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@repo/ui'
 import { XCircle, Heart } from 'lucide-react'
 
 export default function DonationCancelPage() {

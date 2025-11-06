@@ -1,11 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Button } from '@repo/ui/components/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@repo/ui/components/card'
-import { Input } from '@repo/ui/components/input'
-import { Label } from '@repo/ui/components/label'
-import { RadioGroup, RadioGroupItem } from '@repo/ui/components/radio-group'
+import { Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, Input, Label } from '@repo/ui'
 import { HeartHandshake } from 'lucide-react'
 
 const PRESET_AMOUNTS = [
@@ -113,23 +109,34 @@ export default function DonatePage() {
             {/* Donation Type */}
             <div className="space-y-3">
               <Label>Donation Type</Label>
-              <RadioGroup
-                value={donationType}
-                onValueChange={(value) => setDonationType(value as 'ONE_TIME' | 'MONTHLY')}
-              >
+              <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="ONE_TIME" id="one-time" />
+                  <input
+                    type="radio"
+                    id="one-time"
+                    value="ONE_TIME"
+                    checked={donationType === 'ONE_TIME'}
+                    onChange={(e) => setDonationType(e.target.value as 'ONE_TIME' | 'MONTHLY')}
+                    className="w-4 h-4"
+                  />
                   <Label htmlFor="one-time" className="font-normal cursor-pointer">
                     One-time donation
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="MONTHLY" id="monthly" />
+                  <input
+                    type="radio"
+                    id="monthly"
+                    value="MONTHLY"
+                    checked={donationType === 'MONTHLY'}
+                    onChange={(e) => setDonationType(e.target.value as 'ONE_TIME' | 'MONTHLY')}
+                    className="w-4 h-4"
+                  />
                   <Label htmlFor="monthly" className="font-normal cursor-pointer">
                     Monthly donation (recurring)
                   </Label>
                 </div>
-              </RadioGroup>
+              </div>
             </div>
 
             {/* Amount Selection */}

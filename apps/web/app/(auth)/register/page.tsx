@@ -4,9 +4,9 @@ import { useState } from "react"
 import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
-import { Button } from "@repo/ui/button"
-import { Input } from "@repo/ui/input"
-import { Label } from "@repo/ui/label"
+import { Button } from "@repo/ui"
+import { Input } from "@repo/ui"
+import { Label } from "@repo/ui"
 
 export default function RegisterPage() {
   const router = useRouter()
