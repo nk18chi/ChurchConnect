@@ -56,11 +56,6 @@ async function startServer() {
     res.json({ status: 'ok', timestamp: new Date().toISOString() })
   })
 
-  // Sentry error handler (only if Sentry is initialized)
-  if (sentryEnabled) {
-    app.use(Sentry.Handlers.errorHandler())
-  }
-
   // Start the server
   await new Promise<void>((resolve) => httpServer.listen({ port: PORT }, resolve))
 

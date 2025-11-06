@@ -1,5 +1,6 @@
 import * as Sentry from '@sentry/node'
 import { nodeProfilingIntegration } from '@sentry/profiling-node'
+import { expressIntegration } from '@sentry/node'
 
 let sentryInitialized = false
 
@@ -21,9 +22,10 @@ export function initSentry() {
     // Profiling - samples 10% of transactions
     profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
 
-    // Enable profiling
+    // Enable profiling and Express integration
     integrations: [
       nodeProfilingIntegration(),
+      expressIntegration(),
     ],
 
     // Add tags for app identification
