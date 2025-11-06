@@ -4,6 +4,8 @@ import { sendContactFormEmail } from '@repo/email'
 import { prisma } from '@repo/database'
 import { verifyRecaptchaToken } from '@/lib/recaptcha'
 
+export const dynamic = 'force-dynamic'
+
 // Rate limiting map: IP -> array of timestamps
 const rateLimitMap = new Map<string, number[]>()
 
