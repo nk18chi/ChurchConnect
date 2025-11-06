@@ -1,4 +1,5 @@
 import { builder } from '../builder'
+import { createUser } from '@repo/auth'
 
 // User Role Enum
 export const UserRoleEnum = builder.enumType('UserRole', {
@@ -6,7 +7,7 @@ export const UserRoleEnum = builder.enumType('UserRole', {
 })
 
 // User Type
-builder.prismaObject('User', {
+const UserType = builder.prismaObject('User', {
   fields: (t) => ({
     id: t.exposeID('id'),
     email: t.exposeString('email'),
@@ -52,14 +53,27 @@ const LoginInput = builder.inputType('LoginInput', {
   }),
 })
 
+// Define Auth Response shape
+interface AuthResponseShape {
+  success: boolean
+  message: string
+  user: any
+}
+
 // Auth Response Type
-const AuthResponse = builder.objectType('AuthResponse', {
+const AuthResponse = builder.objectRef<AuthResponseShape>('AuthResponse').implement({
   fields: (t) => ({
-    success: t.boolean(),
-    message: t.string({ nullable: true }),
-    user: t.field({
-      type: 'User',
+    success: t.boolean({
+      resolve: (parent) => parent.success,
+    }),
+    message: t.string({
       nullable: true,
+      resolve: (parent) => parent.message,
+    }),
+    user: t.field({
+      type: UserType,
+      nullable: true,
+      resolve: (parent) => parent.user,
     }),
   }),
 })
@@ -71,7 +85,7 @@ builder.mutationField('register', (t) =>
     args: {
       input: t.arg({ type: RegisterInput, required: true }),
     },
-    resolve: async (_root, args, ctx) => {
+    resolve: async (_root, args, ctx): Promise<AuthResponseShape> => {
       const { email, password, name } = args.input
 
       // Check if user already exists
@@ -87,11 +101,8 @@ builder.mutationField('register', (t) =>
         }
       }
 
-      // Import dynamically to avoid circular dependencies
-      const { createUser } = await import('@repo/auth')
-
       // Create user
-      const user = await createUser(email, password, name)
+      const user = await createUser(email, password, name ?? undefined)
 
       return {
         success: true,

@@ -12,6 +12,7 @@
   "dependencies": {
     "@pothos/core": "^3.41.0",
     "@pothos/plugin-prisma": "^3.65.0",
+    "@repo/auth": "workspace:*",
     "@repo/database": "workspace:*",
     "@repo/domain": "workspace:^",
     "@repo/email": "workspace:*",
