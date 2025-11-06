@@ -40,7 +40,7 @@ export function LocaleProvider({ children }: { children: React.ReactNode }) {
   const value: LocaleContextType = {
     locale,
     setLocale,
-    t: translations[locale],
+    t: translations[locale] as TranslationKeys,
   };
 
   return (
