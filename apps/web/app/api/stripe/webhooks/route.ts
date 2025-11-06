@@ -3,13 +3,17 @@ import Stripe from 'stripe'
 import { prisma } from '@repo/database'
 import { sendDonationReceipt } from '@repo/email'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2024-11-20.acacia',
-})
+export const dynamic = 'force-dynamic'
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+    apiVersion: '2025-10-29.clover',
+  })
+}
 
 export async function POST(req: NextRequest) {
+  const stripe = getStripe()
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''
   try {
     // Get the raw body
     const body = await req.text()
@@ -54,7 +58,7 @@ export async function POST(req: NextRequest) {
       }
 
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice
+        const invoice = event.data.object as any
 
         // Handle recurring subscription payment
         if (invoice.subscription) {
@@ -65,14 +69,14 @@ export async function POST(req: NextRequest) {
       }
 
       case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription
+        const subscription = event.data.object as any
 
         await handleSubscriptionUpdated(subscription)
         break
       }
 
       case 'customer.subscription.deleted': {
-        const subscription = event.data.object as Stripe.Subscription
+        const subscription = event.data.object as any
 
         await handleSubscriptionCanceled(subscription)
         break
@@ -170,6 +174,7 @@ async function handleOneTimePayment(session: Stripe.Checkout.Session) {
 
 // Handle subscription creation
 async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
+  const stripe = getStripe()
   const { metadata, customer, subscription: subscriptionId, customer_details } = session
 
   if (!subscriptionId || typeof subscriptionId !== 'string') {
@@ -178,11 +183,11 @@ async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
   }
 
   // Retrieve the full subscription object
-  const subscription = await stripe.subscriptions.retrieve(subscriptionId)
+  const subscription: any = await stripe.subscriptions.retrieve(subscriptionId)
 
   const userId = metadata?.userId || null
   const churchId = metadata?.churchId || null
-  const amount = subscription.items.data[0]?.price.unit_amount || 0
+  const amount = subscription.items?.data?.[0]?.price?.unit_amount || 0
 
   // Create subscription record
   try {
@@ -242,7 +247,7 @@ async function handleSubscriptionCreated(session: Stripe.Checkout.Session) {
 }
 
 // Handle recurring subscription payment
-async function handleRecurringPayment(invoice: Stripe.Invoice) {
+async function handleRecurringPayment(invoice: any) {
   const { subscription: subscriptionId, amount_paid, payment_intent, customer, customer_email, customer_name, created, number } = invoice
 
   if (!subscriptionId || typeof subscriptionId !== 'string' || !payment_intent) {
@@ -306,7 +311,7 @@ async function handleRecurringPayment(invoice: Stripe.Invoice) {
 }
 
 // Handle subscription updates
-async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
+async function handleSubscriptionUpdated(subscription: any) {
   try {
     await prisma.platformDonationSubscription.update({
       where: { stripeSubscriptionId: subscription.id },
@@ -328,7 +333,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
 }
 
 // Handle subscription cancellation
-async function handleSubscriptionCanceled(subscription: Stripe.Subscription) {
+async function handleSubscriptionCanceled(subscription: any) {
   try {
     const subscriptionRecord = await prisma.platformDonationSubscription.update({
       where: { stripeSubscriptionId: subscription.id },
