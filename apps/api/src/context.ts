@@ -27,6 +27,7 @@ export async function createContext({ req, res }: { req: Request; res: Response 
       const decoded = await decode({
         token,
         secret: process.env.NEXTAUTH_SECRET || '',
+        salt: process.env.NODE_ENV === 'production' ? '__Secure-next-auth.session-token' : 'next-auth.session-token',
       })
 
       if (decoded) {
